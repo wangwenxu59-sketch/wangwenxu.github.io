@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>恐龙跳一跳 · Dino Game</title>
+<title>跳一跳 e</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦖</text></svg>">
 <style>
   :root{
@@ -35,10 +35,8 @@
 </style>
 </head>
 <body>
-  <h1>🦖 恐龙跳一跳</h1>
+  <h1></h1>
   <canvas id="game" width="800" height="260"></canvas>
-  <div class="hint">空格 / ↑ 跳跃　·　↓ 低头（空中快速下落）　·　触屏点击跳跃<br>每 400 分切换昼夜 · 撞到障碍物游戏结束</div>
-  <a class="back" href="./">← 返回主页</a>
 
 <script>
 (() => {
@@ -46,7 +44,7 @@
   const ctx = cvs.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  const W = 800, H = 260, GY = 212;          // 画布尺寸与地面线
+  const W = 880, H = 270, GY = 230;          // 画布尺寸与地面线
   const GRAV = 2600, JUMP_V = -780;          // 重力与跳跃初速度
   const START_SPEED = 340, MAX_SPEED = 950, ACCEL = 8;
 
@@ -365,7 +363,7 @@
     if (mile > lastMile) { lastMile = mile; flash = 0.6; beep(660, 0.06); setTimeout(() => beep(880, 0.06), 90); }
 
     // 昼夜切换
-    const phase = Math.floor(score / 400);
+    const phase = Math.floor(score / 100);
     if (phase !== lastPhase) {
       night = phase % 2 === 1; lastPhase = phase;
       document.body.classList.toggle('night', night);
