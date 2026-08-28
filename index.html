@@ -1,1 +1,282 @@
-hello ！
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>王文旭 · 个人主页</title>
+  <meta name="description" content="王文旭的个人主页 — 记录、分享与创造">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✏️</text></svg>">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #f6f8fa;
+      --text: #1f2328;
+      --text-muted: #656d76;
+      --accent: #0969da;
+      --accent-soft: #ddf4ff;
+      --border: #d0d7de;
+      --card: #ffffff;
+      --shadow: 0 1px 3px rgba(31,35,40,.06), 0 8px 24px rgba(31,35,40,.06);
+      --radius: 12px;
+    }
+    [data-theme="dark"] {
+      --bg: #0d1117;
+      --bg-soft: #161b22;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-soft: #122d42;
+      --border: #30363d;
+      --card: #161b22;
+      --shadow: 0 1px 3px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      transition: background .25s, color .25s;
+    }
+    .container { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+    /* ===== 顶部导航 ===== */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo { font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none; font-size: 14px;
+      padding: 6px 12px; border-radius: 8px; transition: all .2s;
+    }
+    .nav-links a:hover { color: var(--accent); background: var(--accent-soft); }
+    .theme-toggle {
+      background: var(--bg-soft); border: 1px solid var(--border); color: var(--text-muted);
+      width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 15px;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ===== Hero ===== */
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, #0969da, #8957e5);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 40px; color: #fff; font-weight: 700;
+      box-shadow: var(--shadow); margin-bottom: 24px;
+    }
+    .hero h1 { font-size: 36px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 12px; }
+    .hero .tagline { font-size: 18px; color: var(--text-muted); margin-bottom: 24px; }
+    .hero .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 32px; }
+    .badge {
+      background: var(--accent-soft); color: var(--accent);
+      padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 500;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; border-radius: 10px; font-size: 15px; font-weight: 600;
+      text-decoration: none; transition: all .2s; cursor: pointer; border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--accent); color: #fff !important; }
+    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-outline { border-color: var(--border); color: var(--text) !important; background: var(--card); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent) !important; }
+
+    /* ===== 区块通用 ===== */
+    section { padding: 48px 0; }
+    .section-title {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 24px; font-weight: 700; margin-bottom: 28px;
+    }
+    .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    /* ===== 关于我 ===== */
+    .about-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow);
+    }
+    .about-card p { color: var(--text-muted); margin-bottom: 12px; }
+    .about-card p:last-child { margin-bottom: 0; }
+
+    /* ===== 项目卡片 ===== */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .project-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+      text-decoration: none; color: var(--text); display: block;
+      transition: all .25s;
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(9,105,218,.12), 0 12px 32px rgba(31,35,40,.1);
+    }
+    .project-card .emoji { font-size: 28px; margin-bottom: 12px; display: block; }
+    .project-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .project-card p { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; }
+    .project-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      font-size: 12px; padding: 2px 10px; border-radius: 999px;
+      background: var(--bg-soft); border: 1px solid var(--border); color: var(--text-muted);
+    }
+
+    /* ===== 链接 ===== */
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .link-card {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+      text-decoration: none; color: var(--text); transition: all .25s;
+    }
+    .link-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .link-card .icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--accent-soft); color: var(--accent);
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .link-card .label { font-weight: 600; font-size: 15px; }
+    .link-card .desc { font-size: 12px; color: var(--text-muted); }
+
+    /* ===== 页脚 ===== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0; text-align: center;
+      color: var(--text-muted); font-size: 14px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer .heart { color: #cf222e; }
+
+    @media (max-width: 640px) {
+      .hero { padding: 56px 0 40px; }
+      .hero h1 { font-size: 28px; }
+      .hero .tagline { font-size: 16px; }
+      .nav-links a:not(.theme-toggle) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航 -->
+  <nav>
+    <div class="container nav-inner">
+      <a class="nav-logo" href="#">王文旭<span>.</span></a>
+      <div class="nav-links">
+        <a href="#about">关于</a>
+        <a href="#projects">项目</a>
+        <a href="#links">链接</a>
+        <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero container">
+    <div class="avatar">王</div>
+    <h1>你好，我是王文旭</h1>
+    <p class="tagline">记录 · 分享 · 创造</p>
+    <div class="badges">
+      <span class="badge">✏️ Sketch</span>
+      <span class="badge">💻 开发者</span>
+      <span class="badge">📚 终身学习者</span>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#projects">看看我的项目 ↓</a>
+      <a class="btn btn-outline" href="https://github.com/wangwenxu59-sketch" target="_blank">GitHub 主页</a>
+    </div>
+  </header>
+
+  <!-- 关于我 -->
+  <section id="about" class="container">
+    <h2 class="section-title">关于我</h2>
+    <div class="about-card">
+      <p>欢迎来到我的个人主页！这里是我的数字花园，记录我的学习笔记、项目作品与生活随想。</p>
+      <p>我喜欢动手把想法变成现实 —— 无论是写代码、做设计，还是折腾各种有趣的工具。这个站点托管在 GitHub Pages 上，使用简洁的静态模板搭建，加载飞快。</p>
+    </div>
+  </section>
+
+  <!-- 项目 -->
+  <section id="projects" class="container">
+    <h2 class="section-title">项目</h2>
+    <div class="grid">
+      <a class="project-card" href="https://github.com/wangwenxu59-sketch" target="_blank">
+        <span class="emoji">🌱</span>
+        <h3>项目一</h3>
+        <p>在这里填写项目简介，说明它解决了什么问题、使用了哪些技术。</p>
+        <div class="project-tags"><span class="tag">HTML</span><span class="tag">CSS</span></div>
+      </a>
+      <a class="project-card" href="https://github.com/wangwenxu59-sketch" target="_blank">
+        <span class="emoji">🚀</span>
+        <h3>项目二</h3>
+        <p>在这里填写项目简介，说明它解决了什么问题、使用了哪些技术。</p>
+        <div class="project-tags"><span class="tag">JavaScript</span><span class="tag">GitHub Pages</span></div>
+      </a>
+      <a class="project-card" href="https://github.com/wangwenxu59-sketch" target="_blank">
+        <span class="emoji">✨</span>
+        <h3>项目三</h3>
+        <p>在这里填写项目简介，说明它解决了什么问题、使用了哪些技术。</p>
+        <div class="project-tags"><span class="tag">Python</span><span class="tag">工具</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 链接 -->
+  <section id="links" class="container">
+    <h2 class="section-title">找我</h2>
+    <div class="links-grid">
+      <a class="link-card" href="https://github.com/wangwenxu59-sketch" target="_blank">
+        <span class="icon">🐙</span>
+        <span><span class="label">GitHub</span><br><span class="desc">代码仓库</span></span>
+      </a>
+      <a class="link-card" href="mailto:hello@lxsd.me">
+        <span class="icon">📧</span>
+        <span><span class="label">邮箱</span><br><span class="desc">hello@lxsd.me</span></span>
+      </a>
+      <a class="link-card" href="#about">
+        <span class="icon">📝</span>
+        <span><span class="label">博客</span><br><span class="desc">即将上线</span></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    <div class="container">
+      <p>© 2026 王文旭 · 用 <span class="heart">♥</span> 搭建 · 托管于 <a href="https://pages.github.com" target="_blank">GitHub Pages</a></p>
+    </div>
+  </footer>
+
+  <script>
+    // 主题切换（跟随系统 + 手动覆盖 + 本地记忆）
+    const toggle = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+    updateIcon();
+
+    toggle.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateIcon();
+    });
+
+    function updateIcon() {
+      const cur = document.documentElement.getAttribute('data-theme');
+      toggle.textContent = cur === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+</body>
+</html>
