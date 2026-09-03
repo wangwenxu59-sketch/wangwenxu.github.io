@@ -3,420 +3,410 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>跳一跳 e</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦖</text></svg>">
+<title>共享文件打印站</title>
 <style>
-  :root{
-    --bg:#f7f7f7; --fg:#535353; --card:#fff; --muted:#8a8a8a; --border:#e3e3e3;
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --radius: 12px;
   }
-  body.night{
-    --bg:#1c1c1e; --fg:#e8e8e8; --card:#2a2a2c; --muted:#9a9a9a; --border:#3a3a3c;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
   }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{
-    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:var(--bg); color:var(--fg); gap:14px; padding:20px;
-    font-family:"Courier New",ui-monospace,monospace;
-    transition:background .5s,color .5s;
-    -webkit-user-select:none; user-select:none; touch-action:manipulation;
+  header {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #fff;
+    padding: 36px 20px 30px;
+    text-align: center;
   }
-  h1{font-size:22px; letter-spacing:1px}
-  .hint{font-size:13px; color:var(--muted); text-align:center; line-height:1.8}
-  canvas{
-    width:min(96vw,800px); height:auto; display:block;
-    image-rendering:pixelated; image-rendering:crisp-edges;
-    background:var(--bg); border:1px solid var(--border); border-radius:10px;
-    cursor:pointer; outline:none;
-    transition:background .5s,border-color .5s;
+  header h1 { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+  header p { margin-top: 8px; opacity: .9; font-size: 14px; }
+  .container { max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .toolbar {
+    display: flex; gap: 12px; align-items: center;
+    margin-bottom: 20px; flex-wrap: wrap;
   }
-  .back{font-size:13px; color:var(--muted); text-decoration:none; border:1px solid var(--border);
-        padding:6px 16px; border-radius:8px; background:var(--card); transition:all .2s}
-  .back:hover{color:var(--fg)}
+  #search {
+    flex: 1; min-width: 220px;
+    padding: 11px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    outline: none;
+    background: var(--card);
+    transition: border .2s, box-shadow .2s;
+  }
+  #search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+  .stats { font-size: 13px; color: var(--muted); white-space: nowrap; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(31,41,55,.08);
+  }
+  .file-head { display: flex; align-items: center; gap: 12px; }
+  .file-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .icon-pdf   { background: #fee2e2; }
+  .icon-img   { background: #dbeafe; }
+  .icon-text  { background: #dcfce7; }
+  .icon-other { background: #f3f4f6; }
+  .file-name {
+    font-weight: 600; font-size: 14px;
+    word-break: break-all; line-height: 1.4;
+  }
+  .file-meta { font-size: 12px; color: var(--muted); }
+  .card-actions { display: flex; gap: 8px; margin-top: auto; }
+  .btn {
+    flex: 1;
+    border: none; border-radius: 8px;
+    padding: 9px 0;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, opacity .15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-ghost { background: #eef2ff; color: var(--primary); }
+  .btn-ghost:hover { background: #e0e7ff; }
+
+  .empty {
+    text-align: center; color: var(--muted);
+    padding: 60px 20px; font-size: 14px; line-height: 2;
+  }
+
+  /* 预览弹窗 */
+  .modal-mask {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(17,24,39,.55);
+    z-index: 100;
+    padding: 24px;
+  }
+  .modal-mask.open { display: flex; align-items: center; justify-content: center; }
+  .modal {
+    background: #fff;
+    border-radius: 14px;
+    width: min(860px, 100%);
+    max-height: 92vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.25);
+  }
+  .modal-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-header .title {
+    flex: 1; font-weight: 600; font-size: 15px;
+    word-break: break-all;
+  }
+  .modal-header .btn { flex: none; padding: 8px 18px; }
+  .close-x {
+    border: none; background: #f3f4f6; color: var(--text);
+    width: 34px; height: 34px; border-radius: 8px;
+    font-size: 16px; cursor: pointer; flex-shrink: 0;
+  }
+  .close-x:hover { background: #e5e7eb; }
+  .modal-body {
+    flex: 1; overflow: auto;
+    padding: 18px;
+    background: #fafafa;
+  }
+  .modal-body iframe { width: 100%; height: 65vh; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+  .modal-body img.preview-img { max-width: 100%; display: block; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+  .modal-body pre {
+    white-space: pre-wrap; word-break: break-word;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13px; line-height: 1.7;
+    background: #fff; padding: 20px;
+    border: 1px solid var(--border); border-radius: 8px;
+  }
+  .hint { font-size: 13px; color: var(--muted); line-height: 1.8; padding: 10px 0; }
+
+  footer {
+    text-align: center; color: var(--muted);
+    font-size: 12px; padding: 30px 20px; line-height: 2;
+  }
+  footer a { color: var(--primary); text-decoration: none; }
+
+  @media (max-width: 560px) {
+    header h1 { font-size: 20px; }
+    .modal-header { flex-wrap: wrap; }
+  }
 </style>
 </head>
 <body>
-  <h1></h1>
-  <canvas id="game" width="800" height="260"></canvas>
+
+<header>
+  <h1 id="siteName">📄 共享文件打印站</h1>
+  <p id="siteSub">文件共享 · 在线预览 · 一键打印</p>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="🔍 搜索文件名…" autocomplete="off">
+    <span class="stats" id="stats"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none"></div>
+</div>
+
+<!-- 预览弹窗 -->
+<div class="modal-mask" id="mask">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="title" id="modalTitle"></div>
+      <button class="btn btn-primary" onclick="printCurrent()">🖨 打印</button>
+      <button class="btn btn-ghost" onclick="downloadCurrent()">⬇ 下载</button>
+      <button class="close-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<footer>
+  将文件放入仓库 <b>files/</b> 文件夹并推送，文件列表自动更新 · 通过 GitHub Pages 免费访问<br>
+  Powered by GitHub Pages · 简单 · 便捷 · 免费托管
+</footer>
 
 <script>
-(() => {
-  const cvs = document.getElementById('game');
-  const ctx = cvs.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
+/* ================= 可自定义配置 ================= */
+const CONFIG = {
+  siteName: "共享文件打印站",
+  subtitle: "文件共享 · 在线预览 · 一键打印",
+  manifest: "files.json"   // 文件清单（由 GitHub Actions 自动生成）
+};
+/* =============================================== */
 
-  const W = 880, H = 270, GY = 230;          // 画布尺寸与地面线
-  const GRAV = 2600, JUMP_V = -780;          // 重力与跳跃初速度
-  const START_SPEED = 340, MAX_SPEED = 950, ACCEL = 8;
+document.getElementById("siteName").textContent = "📄 " + CONFIG.siteName;
+document.getElementById("siteSub").textContent = CONFIG.subtitle;
 
-  // ---------- 像素图案 ----------
-  // 恐龙（站立 / 奔跑两帧 / 死亡）
-  const STAND = [
-    "........XXXXXXXX...",
-    "........XXXXXXXX...",
-    "........XX.XXXXX...",
-    "........XXXXXXXX...",
-    "........XXXXXXXX...",
-    "........XXXXX......",
-    "........XXXX.......",
-    "X.......XXXX.......",
-    "XX.....XXXXX.......",
-    "XXX...XXXXXX.......",
-    "XXXXXXXXXXXX.XX....",
-    ".XXXXXXXXXX...X....",
-    "..XXXXXXXXX........",
-    "...XXXXXXX.........",
-    "....XXXXX..........",
-    ".....XXXX..........",
-    ".....XX.XX.........",
-    ".....XX..XX........",
-    ".....XX..XX........",
-    ".....XXX..XXX......",
-  ];
-  const RUN1 = STAND.slice(0, 16).concat([
-    ".....XX.XX.........",
-    ".....XX............",
-    ".....XX............",
-    ".....XXX...........",
-  ]);
-  const RUN2 = STAND.slice(0, 16).concat([
-    ".....XX.XX.........",
-    "........XX.........",
-    "........XX.........",
-    "........XXX........",
-  ]);
-  const DEAD = STAND.slice();
-  DEAD[2] = "........X..XXXX....";   // 惊讶的圆眼
+let FILES = [];
+let current = null;   // 当前预览的文件
 
-  // 低头（两帧）
-  const DUCK1 = [
-    "..................XXXXXX.",
-    "X.................XXXXXXX",
-    "XX...XXXXXXXXXXXXXX.XXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXX",
-    ".XXXXXXXXXXXXXXXXXXXX....",
-    "..XXXXXXXXXXXXXXXXXXX....",
-    "....XXXXXXXXXXXXXXX......",
-    "......XX.....XX..........",
-    "......XX..................",
-    "......XXX.................",
-  ];
-  const DUCK2 = [
-    "..................XXXXXX.",
-    "X.................XXXXXXX",
-    "XX...XXXXXXXXXXXXXX.XXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXX",
-    ".XXXXXXXXXXXXXXXXXXXX....",
-    "..XXXXXXXXXXXXXXXXXXX....",
-    "....XXXXXXXXXXXXXXX......",
-    "......XX.....XX..........",
-    ".............XX..........",
-    ".............XXX.........",
-  ];
+const IMG_EXT  = ["jpg","jpeg","png","gif","webp","bmp","svg"];
+const TXT_EXT  = ["txt","md","log","csv","json","xml","html","js","css","py"];
 
-  // 翼龙（翅膀上下两帧）
-  const BIRD_UP = [
-    "..........XX....",
-    ".........XXXX...",
-    "........XXXXX...",
-    "XX..XXXXXXXXXXX.",
-    "XXXXXXXXXXXXXXXX",
-    "XX....XXXXXX....",
-    "......XXXXX.....",
-    ".......XXX......",
-  ];
-  const BIRD_DOWN = [
-    "................",
-    "................",
-    "XX..XXXXXXXXXXX.",
-    "XXXXXXXXXXXXXXXX",
-    "XX....XXXXXXXXXX",
-    "......XXXXXX....",
-    "........XXXXX...",
-    ".........XXXX...",
-  ];
+function extOf(path) {
+  const m = path.toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m ? m[1] : "";
+}
+function typeOf(f) {
+  const e = extOf(f.path);
+  if (e === "pdf") return "pdf";
+  if (IMG_EXT.includes(e)) return "img";
+  if (TXT_EXT.includes(e)) return "text";
+  return "other";
+}
+function fmtSize(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b/1024).toFixed(1) + " KB";
+  return (b/1048576).toFixed(2) + " MB";
+}
+function fmtDate(s) {
+  if (!s) return "";
+  return String(s).replace("T", " ").slice(0, 16);
+}
 
-  const CLOUD = ["..XXXX...", ".XXXXXX..", "XXXXXXXXX"];
-  const MOON  = ["...XXXX...", "..XXXXXX..", ".XXXXXXXX.", ".XXXXXXXX.", ".XXXXXXXX.", "..XXXXXX..", "...XXXX..."];
+const ICONS = {
+  pdf:  { icon: "📕", cls: "icon-pdf",  label: "PDF" },
+  img:  { icon: "🖼️", cls: "icon-img",  label: "图片" },
+  text: { icon: "📝", cls: "icon-text", label: "文本" },
+  other:{ icon: "📦", cls: "icon-other",label: "文件" }
+};
 
-  const S = 3;  // 恐龙/翼龙像素放大倍数
+function render() {
+  const kw = document.getElementById("search").value.trim().toLowerCase();
+  const list = FILES.filter(f => f.name.toLowerCase().includes(kw));
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
+  grid.innerHTML = "";
 
-  // ---------- 音效 ----------
-  let AC;
-  function beep(freq, dur = 0.08, type = 'square', vol = 0.04) {
-    try {
-      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-      if (AC.state === 'suspended') AC.resume();
-      const o = AC.createOscillator(), g = AC.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(vol, AC.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + dur);
-      o.connect(g).connect(AC.destination);
-      o.start(); o.stop(AC.currentTime + dur);
-    } catch (e) {}
+  document.getElementById("stats").textContent = `共 ${FILES.length} 个文件`;
+  empty.style.display = "none";
+
+  if (!list.length) {
+    empty.style.display = "block";
+    empty.innerHTML = FILES.length
+      ? `没有匹配 “${kw}” 的文件`
+      : `<b>还没有共享文件</b><br>将文件放入仓库的 <b>files/</b> 文件夹并推送到 GitHub<br>文件列表会由 GitHub Actions 自动更新`;
+    return;
   }
 
-  // ---------- 状态 ----------
-  let state = 'ready';         // ready | playing | over
-  let night = false, lastPhase = 0;
-  let speed, score, dist, nextSpawn, lastMile;
-  let obstacles, clouds, pebbles, stars, spawnCloud, spawnPeb;
-  let hiScore = +(localStorage.getItem('dinoHiScore') || 0);
-  let flash = 0;
-
-  const dino = { x: 60, y: GY, vy: 0, onGround: true, duckHeld: false, runT: 0, runF: false };
-
-  function reset() {
-    speed = START_SPEED; score = 0; dist = 0; lastMile = 0;
-    nextSpawn = 620; night = false; lastPhase = 0; flash = 0;
-    obstacles = []; clouds = []; pebbles = []; stars = [];
-    spawnCloud = 0; spawnPeb = 0;
-    dino.y = GY; dino.vy = 0; dino.onGround = true; dino.duckHeld = false;
-    document.body.classList.remove('night');
-  }
-  reset();
-
-  function start() { state = 'playing'; }
-
-  function jump() {
-    if (state === 'playing' && dino.onGround) {
-      dino.vy = JUMP_V; dino.onGround = false;
-      beep(500, 0.07);
-    }
-  }
-
-  function press() {
-    if (state === 'ready') start();
-    else if (state === 'over') { reset(); start(); }
-    else jump();
-  }
-
-  function die() {
-    state = 'over';
-    if (score > hiScore) { hiScore = score; localStorage.setItem('dinoHiScore', hiScore); }
-    beep(170, 0.25, 'sawtooth', 0.06);
-  }
-
-  // ---------- 障碍物 ----------
-  function spawnObstacle() {
-    if (score > 150 && Math.random() < 0.35) {
-      // 翼龙：三种高度
-      const heights = [GY - 34, GY - 88, GY - 140];
-      const top = heights[(Math.random() * heights.length) | 0] - 12 * S;
-      obstacles.push({ type: 'bird', x: W + 60, y: top, t: 0 });
-    } else {
-      const big = Math.random() < 0.4;
-      const w = big ? 26 : 18, h = big ? 52 : 36;
-      const count = big ? 1 + ((Math.random() * 2) | 0) : 1 + ((Math.random() * 3) | 0);
-      obstacles.push({ type: 'cactus', x: W + 60, w, h, count });
-    }
-  }
-
-  function hitboxes() {
-    const boxes = [];
-    for (const o of obstacles) {
-      if (o.type === 'cactus') {
-        const gw = o.count * (o.w + 4) - 4;
-        boxes.push({ x: o.x + 2, y: GY - o.h + 3, w: gw - 4, h: o.h - 3 });
-      } else {
-        boxes.push({ x: o.x + 3, y: o.y + 5, w: 16 * S - 10, h: 12 * S - 10 });
-      }
-    }
-    // 恐龙碰撞盒
-    let d;
-    if (dino.duckHeld && dino.onGround) d = { x: dino.x + 4, y: dino.y - 10 * S + 6, w: 26 * S - 10, h: 10 * S - 8 };
-    else d = { x: dino.x + 8, y: dino.y - STAND.length * S + 10, w: 12 * S, h: STAND.length * S - 14 };
-    return { boxes, d };
-  }
-
-  // ---------- 绘制 ----------
-  function fg() { return night ? '#e8e8e8' : '#535353'; }
-
-  function drawSprite(rows, x, y, s, color) {
-    ctx.fillStyle = color;
-    for (let r = 0; r < rows.length; r++) {
-      const row = rows[r];
-      for (let c = 0; c < row.length; c++)
-        if (row[c] === 'X') ctx.fillRect(x + c * s, y + r * s, s, s);
-    }
-  }
-
-  function drawCactusOne(x, w, h) {
-    ctx.fillStyle = fg();
-    const t = Math.max(5, Math.round(w * 0.26));
-    ctx.fillRect(Math.round(x + (w - t) / 2), GY - h, t, h);
-    const aw = Math.max(4, t - 1);
-    // 左臂
-    ctx.fillRect(x + 1, GY - h * 0.66, w * 0.36, aw);
-    ctx.fillRect(x + 1, GY - h * 0.9, aw, h * 0.28);
-    // 右臂
-    ctx.fillRect(x + w * 0.64 - 1, GY - h * 0.55, w * 0.36, aw);
-    ctx.fillRect(x + w - aw - 1, GY - h * 0.82, aw, h * 0.3);
-  }
-
-  function draw() {
-    // 背景
-    ctx.fillStyle = night ? '#1c1c1e' : '#f7f7f7';
-    ctx.fillRect(0, 0, W, H);
-
-    // 星星与月亮
-    if (night) {
-      ctx.fillStyle = '#9a9a9a';
-      for (const st of stars) ctx.fillRect(st.x, st.y, 3, 3);
-      drawSprite(MOON, W - 160, 36, 4, '#e8e8e8');
-    }
-
-    // 云
-    for (const c of clouds) drawSprite(CLOUD, c.x, c.y, 5, night ? '#555' : '#cfcfcf');
-
-    // 地面
-    ctx.fillStyle = fg();
-    ctx.fillRect(0, GY, W, 2);
-    for (const p of pebbles) ctx.fillRect(p.x, GY + 6 + p.o, p.w, 2);
-
-    // 障碍物
-    for (const o of obstacles) {
-      if (o.type === 'cactus') {
-        for (let i = 0; i < o.count; i++) drawCactusOne(o.x + i * (o.w + 4), o.w, o.h);
-      } else {
-        const fr = (o.t % 0.4) < 0.2 ? BIRD_UP : BIRD_DOWN;
-        drawSprite(fr, o.x, o.y, S, fg());
-      }
-    }
-
-    // 恐龙
-    let sp;
-    if (state === 'over') sp = DEAD;
-    else if (!dino.onGround) sp = STAND;
-    else if (dino.duckHeld) sp = dino.runF ? DUCK1 : DUCK2;
-    else sp = dino.runF ? RUN1 : RUN2;
-    drawSprite(sp, dino.x, dino.y - sp.length * S, S, fg());
-
-    // 分数
-    ctx.font = 'bold 16px "Courier New", monospace';
-    ctx.textAlign = 'right';
-    ctx.fillStyle = flash > 0 ? (Math.floor(flash * 10) % 2 ? fg() : (night ? '#f7f7f7' : '#bbb')) : fg();
-    const sTxt = String(Math.floor(score)).padStart(5, '0');
-    const hTxt = 'HI ' + String(Math.floor(hiScore)).padStart(5, '0');
-    ctx.fillText(sTxt, W - 24, 34);
-    ctx.fillStyle = night ? '#8a8a8a' : '#aaa';
-    ctx.fillText(hTxt, W - 100, 34);
-
-    // 覆盖文字
-    ctx.textAlign = 'center';
-    if (state === 'ready') {
-      ctx.fillStyle = fg();
-      ctx.font = 'bold 22px "Courier New", monospace';
-      ctx.fillText('按 空格 或 点击 开始', W / 2, 100);
-      ctx.font = '15px "Courier New", monospace';
-      ctx.fillStyle = night ? '#8a8a8a' : '#999';
-      ctx.fillText('🦖 DINO RUNNER', W / 2, 130);
-    } else if (state === 'over') {
-      ctx.fillStyle = fg();
-      ctx.font = 'bold 30px "Courier New", monospace';
-      ctx.fillText('G A M E   O V E R', W / 2, 96);
-      ctx.font = 'bold 16px "Courier New", monospace';
-      ctx.fillText('按 空格 / 点击 重新开始', W / 2, 128);
-      ctx.font = '14px "Courier New", monospace';
-      ctx.fillStyle = night ? '#8a8a8a' : '#999';
-      ctx.fillText('得分 ' + Math.floor(score) + (score >= hiScore ? '　🎉 新纪录！' : '　最高 ' + Math.floor(hiScore)), W / 2, 154);
-    }
-  }
-
-  // ---------- 更新 ----------
-  function update(dt) {
-    // 恐龙动画帧
-    dino.runT += dt;
-    if (dino.runT > 0.09) { dino.runF = !dino.runF; dino.runT = 0; }
-
-    // 云 / 鹅卵石 / 星星生成（ready 状态也保持场景微动）
-    spawnCloud -= dt;
-    if (spawnCloud <= 0) {
-      clouds.push({ x: W + 30, y: 30 + Math.random() * 80 });
-      spawnCloud = 2 + Math.random() * 4;
-    }
-    for (const c of clouds) c.x -= (state === 'playing' ? speed * 0.25 : 25) * dt;
-    clouds = clouds.filter(c => c.x > -60);
-
-    if (night) {
-      if (stars.length < 8 && Math.random() < 0.05) stars.push({ x: W + 10, y: 15 + Math.random() * 80 });
-      for (const st of stars) st.x -= 12 * dt;
-      stars = stars.filter(st => st.x > -10);
-    }
-
-    spawnPeb -= dt;
-    if (spawnPeb <= 0) {
-      pebbles.push({ x: W + 10, w: 4 + Math.random() * 8, o: (Math.random() * 3) | 0 });
-      spawnPeb = 0.2 + Math.random() * 0.5;
-    }
-    for (const p of pebbles) p.x -= (state === 'playing' ? speed : 0) * dt;
-    pebbles = pebbles.filter(p => p.x > -20);
-
-    if (flash > 0) flash -= dt;
-
-    if (state !== 'playing') return;
-
-    // 速度与分数
-    speed = Math.min(MAX_SPEED, speed + ACCEL * dt);
-    score += dt * 10;
-
-    const mile = Math.floor(score / 100);
-    if (mile > lastMile) { lastMile = mile; flash = 0.6; beep(660, 0.06); setTimeout(() => beep(880, 0.06), 90); }
-
-    // 昼夜切换
-    const phase = Math.floor(score / 100);
-    if (phase !== lastPhase) {
-      night = phase % 2 === 1; lastPhase = phase;
-      document.body.classList.toggle('night', night);
-    }
-
-    // 恐龙物理
-    if (!dino.onGround) {
-      const g = dino.duckHeld ? GRAV * 2.6 : GRAV;   // 空中按↓快速下落
-      dino.vy += g * dt;
-      dino.y += dino.vy * dt;
-      if (dino.y >= GY) { dino.y = GY; dino.vy = 0; dino.onGround = true; }
-    }
-
-    // 障碍物
-    dist += speed * dt;
-    if (dist >= nextSpawn) {
-      spawnObstacle();
-      dist = 0;
-      nextSpawn = 260 + Math.random() * 340 + speed * 0.45;
-    }
-    for (const o of obstacles) {
-      o.x -= (speed + (o.type === 'bird' ? 70 : 0)) * dt;
-      if (o.type === 'bird') o.t += dt;
-    }
-    obstacles = obstacles.filter(o => o.x > -120);
-
-    // 碰撞检测
-    const { boxes, d } = hitboxes();
-    for (const b of boxes) {
-      if (d.x < b.x + b.w && d.x + d.w > b.x && d.y < b.y + b.h && d.y + d.h > b.y) { die(); break; }
-    }
-  }
-
-  // ---------- 主循环 ----------
-  let last = performance.now();
-  function loop(now) {
-    const dt = Math.min(0.033, (now - last) / 1000);
-    last = now;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-
-  // ---------- 输入 ----------
-  window.addEventListener('keydown', e => {
-    if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); if (!e.repeat) press(); }
-    if (e.code === 'ArrowDown') { e.preventDefault(); if (state === 'playing') dino.duckHeld = true; }
+  list.forEach((f, i) => {
+    const t = typeOf(f);
+    const meta = ICONS[t];
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="file-head">
+        <div class="file-icon ${meta.cls}">${meta.icon}</div>
+        <div>
+          <div class="file-name">${escapeHtml(f.name)}</div>
+          <div class="file-meta">${meta.label} · ${fmtSize(f.size || 0)}${f.date ? " · " + fmtDate(f.date) : ""}</div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-ghost" data-act="preview">👁 预览</button>
+        <button class="btn btn-primary" data-act="print">🖨 打印</button>
+      </div>`;
+    card.querySelector('[data-act="preview"]').onclick = () => openPreview(f);
+    card.querySelector('[data-act="print"]').onclick  = () => openPreview(f, true);
+    grid.appendChild(card);
   });
-  window.addEventListener('keyup', e => { if (e.code === 'ArrowDown') dino.duckHeld = false; });
-  cvs.addEventListener('mousedown', press);
-  cvs.addEventListener('touchstart', e => { e.preventDefault(); press(); }, { passive: false });
-})();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+/* ---------- 预览 ---------- */
+function openPreview(f, autoPrint) {
+  current = f;
+  document.getElementById("modalTitle").textContent = f.name;
+  const body = document.getElementById("modalBody");
+  body.innerHTML = "";
+  const t = typeOf(f);
+
+  if (t === "pdf") {
+    const iframe = document.createElement("iframe");
+    iframe.src = f.path;
+    body.appendChild(iframe);
+    if (autoPrint) {
+      const hint = document.createElement("div");
+      hint.className = "hint";
+      hint.textContent = "提示：PDF 已加载，若未自动弹出打印窗口，请稍候或在预览框内按 Ctrl+P。";
+      body.appendChild(hint);
+      iframe.onload = () => setTimeout(() => {
+        try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch (e) {}
+      }, 600);
+    }
+  } else if (t === "img") {
+    const img = document.createElement("img");
+    img.className = "preview-img";
+    img.src = f.path;
+    body.appendChild(img);
+    if (autoPrint) setTimeout(() => printCurrent(), 300);
+  } else if (t === "text") {
+    fetch(f.path).then(r => r.text()).then(txt => {
+      const pre = document.createElement("pre");
+      pre.textContent = txt;
+      body.innerHTML = "";
+      body.appendChild(pre);
+      if (autoPrint) setTimeout(() => printCurrent(), 200);
+    }).catch(() => {
+      body.innerHTML = '<div class="hint">无法读取文件内容，请直接下载后打开。</div>';
+    });
+  } else {
+    body.innerHTML = '<div class="hint">该文件类型不支持在线预览，请点击「下载」保存后打开或打印。</div>';
+  }
+  document.getElementById("mask").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("mask").classList.remove("open");
+  document.getElementById("modalBody").innerHTML = "";
+  current = null;
+}
+document.getElementById("mask").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+function downloadCurrent() {
+  if (!current) return;
+  const a = document.createElement("a");
+  a.href = current.path;
+  a.download = current.name;
+  a.click();
+}
+
+/* ---------- 打印 ---------- */
+function printCurrent() {
+  if (!current) return;
+  const t = typeOf(current);
+  if (t === "pdf") {
+    // 直接打印内嵌 PDF
+    const iframe = document.querySelector("#modalBody iframe");
+    if (iframe) { try { iframe.contentWindow.focus(); iframe.contentWindow.print(); return; } catch (e) {} }
+    window.open(current.path, "_blank");
+    return;
+  }
+  if (t === "img") {
+    printHtml(`<img src="${current.path}" style="max-width:100%">`, current.name);
+    return;
+  }
+  if (t === "text") {
+    fetch(current.path).then(r => r.text()).then(txt => {
+      printHtml(`<pre style="white-space:pre-wrap;font-family:Consolas,monospace;font-size:12pt;line-height:1.7">${escapeHtml(txt)}</pre>`, current.name);
+    });
+    return;
+  }
+  window.open(current.path, "_blank");
+}
+
+function printHtml(innerHtml, title) {
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+  document.body.appendChild(iframe);
+  const doc = iframe.contentDocument;
+  doc.open();
+  doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title || "")}</title>
+    <style>@page{margin:15mm} body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:10px}</style>
+    </head><body>${innerHtml}</body></html>`);
+  doc.close();
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(() => iframe.remove(), 2000);
+    }, 300);
+  };
+}
+
+/* ---------- 加载清单 ---------- */
+document.getElementById("search").addEventListener("input", render);
+
+fetch(CONFIG.manifest)
+  .then(r => { if (!r.ok) throw new Error("manifest missing"); return r.json(); })
+  .then(data => { FILES = Array.isArray(data) ? data : []; render(); })
+  .catch(() => {
+    FILES = []; render();
+    const empty = document.getElementById("empty");
+    empty.innerHTML =
+      '<b>未找到 files.json 文件清单</b><br>' +
+      '· 部署在 GitHub 时：推送后 Action 会自动生成<br>' +
+      '· 本地预览时：在项目目录运行 <code>python generate_manifest.py</code>，再执行 <code>python -m http.server</code> 打开 <code>http://localhost:8000</code>';
+  });
 </script>
 </body>
 </html>
