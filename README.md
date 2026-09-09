@@ -1,1 +1,101 @@
-IyDnvZHmmJPkupHlkKzmrYzorrDlvZXliqnmiYvvvIhHaXRIdWIgQWN0aW9ucyDniYjvvIkKCuWIqeeUqCBHaXRIdWIgQWN0aW9ucyDmr4/lpKnlrprml7boh6rliqgi5ZCs5q2MIu+8jOS4uuS9oOeahOe9keaYk+S6kemfs+S5kOi0puWPt+e0r+enr+WQrOatjOmHj++8jOW5tumAmui/hyBHaXRIdWIgUGFnZXMg5bGV56S65pKt5pS+5pWw5o2u55yL5p2/44CCCgo+IOKaoO+4jyAqKumjjumZqeaPkOekuioq77ya6Ieq5Yqo5Yi35ZCs5q2M6K6w5b2V5bGe5LqO6Z2e5a6Y5pa56KGM5Li677yM5Y+v6IO96L+d5Y+N572R5piT5LqR6Z+z5LmQ55So5oi35Y2P6K6u77yM5p6B56uv5oOF5Ya15LiL5a2Y5Zyo6LSm5Y+36KKr6aOO5o6nL+mZkOWItueahOmjjumZqe+8jOivt+iHquihjOivhOS8sOOAguacrOmhueebruS7heS+m+S4quS6uuWtpuS5oOS6pOa1geS9v+eUqOOAggoKIyMg5Lik56eN6L+Q6KGM5qih5byP77yITkVURUFTRV9NT0RF77yJCgp8IOaooeW8jyB8IOivtOaYjiB8IOm7mOiupOavj+aXpeasoeaVsCB8IOmihOiuoeiAl+aXtiB8CnwtLS18LS0tfC0tLXwtLS18CnwgYHJlYWxg77yI6buY6K6k77yJIHwgKirnnJ/lrp7lkKzmrYwqKu+8muiOt+WPluatjOabsiAxMjhrYnBzIOmfs+mikea1ge+8jOaMieecn+WunuaSreaUvumAn+W6pui+ueaLiea1gei+ueiuoeaXtu+8jOWQrOWujOS4gOmmluS4iuaKpeS4gOadoeiusOW9leOAguacjeWKoeWZqOerr+acieecn+WunuaSreaUvua1gemHj++8jOiusOW9leabtOWPr+S/oSB8IDIwIHwg57qmIDgwIOWIhumSnyB8CnwgYHJlcG9ydGAgfCDku4XkuIrmiqXvvJrkuI3lgZrnnJ/lrp7mi4nmtYHvvIznm7TmjqXmjInmqKHmi5/ml7bplb/kuIrmiqXvvIzpgJ/luqblv6sgfCAxMDAgfCDnuqYgMTAg5YiG6ZKfIHwKCj4g55yf5a6e5ZCs5q2M5qih5byP5aaC6ZyA5o+Q6YCf77yM5Y+v6YWN572uIGBORVRFQVNFX1NQRUVEYO+8iOWmgiBgNGAgPSA0IOWAjemAn+aLiea1ge+8jDgwIOWIhumSn+WOi+e8qeWIsCAyMCDliIbpkp/vvIzmi4nmtYHmtYHph4/ku43nhLbnnJ/lrp7vvInjgIIKPiDnnJ/lrp7lkKzmrYzmqKHlvI/lj6rkvJrmkq3mlL4qKuWFjei0uS/pnZ4gVklQKiog5q2M5puy77yMVklQIOatjOabsuS8muiHquWKqOi/h+a7pOOAggoKIyMg6aG555uu57uT5p6ECgpgYGAK4pSc4pSA4pSAIG1haW4ucHkgICAgICAgICAgICAgICAgICAgICAjIOaguOW/g+iEmuacrO+8mueZu+W9lSArIOS4iuaKpeaSreaUvuiusOW9lSArIOWGmeWFpeaVsOaNrgrilJzilIDilIAgcmVxdWlyZW1lbnRzLnR4dCAgICAgICAgICAgICMgUHl0aG9uIOS+nei1lgrilJzilIDilIAgLmdpdGh1Yi93b3JrZmxvd3MvYnJ1c2gueW1sICMgR2l0SHViIEFjdGlvbnMg5a6a5pe25Lu75YqhCuKUlOKUgOKUgCBkb2NzLyAgICAgICAgICAgICAgICAgICAgICAgIyBHaXRIdWIgUGFnZXMg5bGV56S655uu5b2VCiAgICDilJzilIDilIAgaW5kZXguaHRtbCAgICAgICAgICAgICAgIyDmlbDmja7nnIvmnb/pobXpnaIKICAgIOKUlOKUgOKUgCBkYXRhLmpzb24gICAgICAgICAgICAgICAjIOi/kOihjOiusOW9le+8iEFjdGlvbnMg6Ieq5Yqo5o+Q5Lqk77yJCmBgYAoKIyMg6YOo572y5q2l6aqk77yI57qmIDUg5YiG6ZKf77yJCgojIyMgMS4g5Yib5bu65LuT5bqTCgoxLiDlnKggR2l0SHViIOaWsOW7uuS4gOS4quS7k+W6k++8iOW7uuiuriAqKlByaXZhdGUqKu+8jOmBv+WFjeazhOmcsuWQrOatjOWBj+Wlve+8ie+8mwoyLiDlsIbmnKzpobnnm67miYDmnInmlofku7bljp/moLfkuIrkvKDliLDku5PlupPmoLnnm67lvZXjgIIKCiMjIyAyLiDphY3nva4gU2VjcmV0cwoK6L+b5YWl5LuT5bqTICoqU2V0dGluZ3Mg4oaSIFNlY3JldHMgYW5kIHZhcmlhYmxlcyDihpIgQWN0aW9ucyDihpIgTmV3IHJlcG9zaXRvcnkgc2VjcmV0KirvvIzmt7vliqDku6XkuIvku7vmhI/kuIDnu4TvvJoKCnwgU2VjcmV0IOWQjeensCB8IOW/heWhqyB8IOivtOaYjiB8CnwtLS18LS0tfC0tLXwKfCBgTkVURUFTRV9DT09LSUVgIHwg5LqM6YCJ5LiAIHwg572R6aG154mIIENvb2tpZSDkuK3nmoQgYE1VU0lDX1VgIOWAvO+8iCoq5o6o6I2QKirvvIznqLPlrprvvIkgfAp8IGBORVRFQVNFX1BIT05FYCArIGBORVRFQVNFX1BBU1NXT1JEYCB8IOS6jOmAieS4gCB8IOaJi+acuuWPtyArIOaYjuaWh+Wvhuegge+8iOiEmuacrOiHquWKqCBNRDXvvIzmmJPop6blj5Hpqozor4HnoIHvvIkgfAoK5Y+v6YCJIFNlY3JldO+8mgoKfCBTZWNyZXQg5ZCN56ewIHwg6buY6K6k5YC8IHwg6K+05piOIHwKfC0tLXwtLS18LS0tfAp8IGBORVRFQVNFX0NPVU5UUllfQ09ERWAgfCBgODZgIHwg5omL5py65Y+35Zu96ZmF5Yy65Y+3IHwKfCBgTkVURUFTRV9NT0RFYCB8IGByZWFsYCB8IGByZWFsYCDnnJ/lrp7lkKzmrYwgLyBgcmVwb3J0YCDku4XkuIrmiqUgfAp8IGBORVRFQVNFX0NPVU5UYCB8IHJlYWw6MjAgLyByZXBvcnQ6MTAwIHwg5q+P5aSp5Yi355qE5pKt5pS+5qyh5pWwIHwKfCBgTkVURUFTRV9TUEVFRGAgfCBgMS4wYCB8IHJlYWwg5qih5byP5ouJ5rWB5YCN6YCf77yIYDRgID0gNCDlgI3pgJ/vvIzmtYHph4/ku43nnJ/lrp7vvIkgfAp8IGBORVRFQVNFX01BWF9EVVJBVElPTmAgfCBgNjAwYCB8IHJlYWwg5qih5byP5Y2V6aaW5pyA6ZW/5ZCs5q2M56eS5pWwIHwKfCBgTkVURUFTRV9QTEFZTElTVGAgfCBgMzc3ODY3OGAgfCDlj5bmrYznmoTmrYzljZUgSUTvvIjpu5jorqTkupHpn7PkuZDng63mrYzmppzvvIkgfAp8IGBORVRFQVNFX1NPTkdfSURTYCB8IOaXoCB8IOiHquWumuS5ieatjOabsiBJRO+8jOiLseaWh+mAl+WPt+WIhumalO+8jOS8mOWFiOS6juatjOWNlSB8CnwgYE5FVEVBU0VfSU5URVJWQUxgIHwgYDVgIHwg5q+P6aaW5q2M5LmL6Ze055qE5bmz5Z2H6Ze06ZqU56eS5pWwIHwKCioq5aaC5L2V6I635Y+WIE1VU0lDX1XvvIhDb29raWUg5pa55byP77yJ77yaKioKCjEuIOeUteiEkea1j+iniOWZqOaJk+W8gCBbbXVzaWMuMTYzLmNvbV0oaHR0cHM6Ly9tdXNpYy4xNjMuY29tKSDlubbnmbvlvZXvvJsKMi4g5oyJIGBGMTJgIOaJk+W8gOW8gOWPkeiAheW3peWFtyDihpIgKipBcHBsaWNhdGlvbu+8iOW6lOeUqO+8iSoqIOKGkiAqKkNvb2tpZXMqKiDihpIgYGh0dHBzOi8vbXVzaWMuMTYzLmNvbWDvvJsKMy4g5om+5Yiw5ZCN5Li6IGBNVVNJQ19VYCDnmoTmnaHnm67vvIzlpI3liLblhbYgKipWYWx1ZSoq77yM5aGr5YWlIFNlY3JldCBgTkVURUFTRV9DT09LSUVg44CCCgojIyMgMy4g5byA5ZCvIEFjdGlvbnMKCuS4iuS8oOWQjui/m+WFpeS7k+W6kyAqKkFjdGlvbnMqKiDmoIfnrb7pobXvvIzoi6Xmj5DnpLrnpoHnlKjor7fngrnlh7sgKipFbmFibGUgd29ya2Zsb3dzKirjgIIKCuW3peS9nOa1gem7mOiupCAqKuavj+WkqeWMl+S6rOaXtumXtCAwOTozMCoqIOiHquWKqOi/kOihjO+8iEdpdEh1YiDlrprml7blj6/og73mnIkgNX4zMCDliIbpkp/lu7bov5/vvInvvIzkuZ/mlK/mjIHmiYvliqjop6blj5HvvJoKCioqQWN0aW9ucyDihpIgQnJ1c2ggTGlzdGVuaW5nIFJlY29yZHMg4oaSIFJ1biB3b3JrZmxvdyoqCgojIyMgNC4g5byA5ZCvIFBhZ2Vz77yI5pWw5o2u55yL5p2/77yJCgoxLiDov5vlhaUgKipTZXR0aW5ncyDihpIgUGFnZXMqKu+8mwoyLiBTb3VyY2Ug6YCJ5oupICoqRGVwbG95IGZyb20gYSBicmFuY2gqKu+8mwozLiBCcmFuY2gg6YCJ5oupIGBtYWluYCDliIbmlK/jgIHnm67lvZXpgIkgKipgL2RvY3NgKirvvIzkv53lrZjvvJsKNC4g56iN562JIDF+MiDliIbpkp/vvIzorr/pl64gYGh0dHBzOi8vPOS9oOeahOeUqOaIt+WQjT4uZ2l0aHViLmlvLzzku5PlupPlkI0+L2Ag5Y2z5Y+v55yL5Yiw5pWw5o2u55yL5p2/44CCCgo+IOazqOaEj++8muiLpeS7k+W6k+S4uiBQcml2YXRl77yM5YWN6LS56LSm5oi35peg5rOV5L2/55SoIEdpdEh1YiBQYWdlc++8jOWPr+WwhuS7k+W6k+iuvuS4uiBQdWJsaWPvvIhkYXRhLmpzb24g5Lit5Y+q5YyF5ZCr5pKt5pS+5pWw5a2X77yM5LiN5ZCr6LSm5Y+35L+h5oGv77yJ77yM5oiW5LiN5byAIFBhZ2Vz44CB55u05o6l5ZyoIEFjdGlvbnMg5pel5b+X5p+l55yL57uT5p6c44CCCgojIyDmnKzlnLDov5DooYwKCmBgYGJhc2gKcGlwIGluc3RhbGwgLXIgcmVxdWlyZW1lbnRzLnR4dApweXRob24gbWFpbi5weSAtLWRyeS1ydW4gICAjIOivlei/kOihjO+8iOS4jeiBlOe9ke+8iQoKIyDmraPlvI/ov5DooYzvvIjmnKzlnLDnjq/looPlj5jph4/mlrnlvI/vvIkKTkVURUFTRV9DT09LSUU9eHh4IE5FVEVBU0VfQ09VTlQ9NTAgcHl0aG9uIG1haW4ucHkKYGBgCgojIyDluLjop4Hpl67popgKCi0gKirnmbvlvZXov5Tlm54gY29kZSA0MDggLyAtNDYxIC8g6ZyA6KaB6aqM6K+B56CB77yfKioKICDlr4bnoIHnmbvlvZXpo47mjqfovoPkuKXvvIzor7fmlLnnlKggYE5FVEVBU0VfQ09PS0lFYO+8iE1VU0lDX1XvvInmlrnlvI/jgIIKLSAqKnJlYWwg5qih5byP5o+Q56S6IuayoeacieS7u+S9leWPr+aSreaUvuWcsOWdgCLlkI7lm57pgIDliLDku4XkuIrmiqXvvJ8qKgogIOWkmuS4uiBDb29raWUg5aSx5pWI5oiW6aOO5o6n77yM6K+35pu05pawIE1VU0lDX1XvvJvkuZ/lj6/og73mmK/mrYzljZXlhajmmK8gVklQIOatjOabsu+8jOaNouS4quWFjei0ueatjOWNlSBJROOAggotICoqTVVTSUNfVSDov4fmnJ/kuobmgI7kuYjlip7vvJ8qKgogIENvb2tpZSDmnInmlYjmnJ/kuIDoiKzmlbDmnIjvvIzlpLHmlYjlkI7ph43mlrDnmbvlvZXnvZHpobXniYjlubbmm7TmlrAgU2VjcmV0IOWNs+WPr+OAggotICoq5LiK5oql5YWo6YOo5aSx6LSl77yfKioKICDmo4Dmn6UgQ29va2llIOaYr+WQpuato+ehruOAgeaYr+WQpuiiq+mjjuaOp++8m+WPr+iwg+S9jiBgTkVURUFTRV9DT1VOVGDjgIHosIPpq5ggYE5FVEVBU0VfSU5URVJWQUxgIOWQjumHjeivleOAggotICoq55yL5p2/5rKh5pyJ5pWw5o2u77yfKioKICDnoa7orqQgQWN0aW9ucyDlt7LmiJDlip/ov5DooYzkuIDmrKHvvIzkuJQgYGRvY3MvZGF0YS5qc29uYCDlt7Looqvoh6rliqjmj5DkuqTjgIIK
+# 网易云听歌记录助手（GitHub Actions 版）
+
+利用 GitHub Actions 每天定时自动"听歌"，为你的网易云音乐账号累积听歌量，并通过 GitHub Pages 展示播放数据看板。
+
+> ⚠️ **风险提示**：自动刷听歌记录属于非官方行为，可能违反网易云音乐用户协议，极端情况下存在账号被风控/限制的风险，请自行评估。本项目仅供个人学习交流使用。
+
+## 两种运行模式（NETEASE_MODE）
+
+| 模式 | 说明 | 默认每日次数 | 预计耗时 |
+|---|---|---|---|
+| `real`（默认） | **真实听歌**：获取歌曲 128kbps 音频流，按真实播放速度边拉流边计时，听完一首上报一条记录。服务器端有真实播放流量，记录更可信 | 20 | 约 80 分钟 |
+| `report` | 仅上报：不做真实拉流，直接按模拟时长上报，速度快 | 100 | 约 10 分钟 |
+
+> 真实听歌模式如需提速，可配置 `NETEASE_SPEED`（如 `4` = 4 倍速拉流，80 分钟压缩到 20 分钟，拉流流量仍然真实）。
+> 真实听歌模式只会播放**免费/非 VIP** 歌曲，VIP 歌曲会自动过滤。
+
+## 项目结构
+
+```
+├── main.py                     # 核心脚本：登录 + 上报播放记录 + 写入数据
+├── requirements.txt            # Python 依赖
+├── .github/workflows/brush.yml # GitHub Actions 定时任务
+└── docs/                       # GitHub Pages 展示目录
+    ├── index.html              # 数据看板页面
+    └── data.json               # 运行记录（Actions 自动提交）
+```
+
+## 部署步骤（约 5 分钟）
+
+### 1. 创建仓库
+
+1. 在 GitHub 新建一个仓库（建议 **Private**，避免泄露听歌偏好）；
+2. 将本项目所有文件原样上传到仓库根目录。
+
+### 2. 配置 Secrets
+
+进入仓库 **Settings → Secrets and variables → Actions → New repository secret**，添加以下任意一组：
+
+| Secret 名称 | 必填 | 说明 |
+|---|---|---|
+| `NETEASE_COOKIE` | 二选一 | 网页版 Cookie 中的 `MUSIC_U` 值（**推荐**，稳定） |
+| `NETEASE_PHONE` + `NETEASE_PASSWORD` | 二选一 | 手机号 + 明文密码（脚本自动 MD5，易触发验证码） |
+
+可选 Secret：
+
+| Secret 名称 | 默认值 | 说明 |
+|---|---|---|
+| `NETEASE_COUNTRY_CODE` | `86` | 手机号国际区号 |
+| `NETEASE_MODE` | `real` | `real` 真实听歌 / `report` 仅上报 |
+| `NETEASE_COUNT` | real:20 / report:100 | 每天刷的播放次数 |
+| `NETEASE_SPEED` | `1.0` | real 模式拉流倍速（`4` = 4 倍速，流量仍真实） |
+| `NETEASE_MAX_DURATION` | `600` | real 模式单首最长听歌秒数 |
+| `NETEASE_PLAYLIST` | `3778678` | 取歌的歌单 ID（默认云音乐热歌榜） |
+| `NETEASE_SONG_IDS` | 无 | 自定义歌曲 ID，英文逗号分隔，优先于歌单 |
+| `NETEASE_INTERVAL` | `5` | 每首歌之间的平均间隔秒数 |
+
+**如何获取 MUSIC_U（Cookie 方式）：**
+
+1. 电脑浏览器打开 [music.163.com](https://music.163.com) 并登录；
+2. 按 `F12` 打开开发者工具 → **Application（应用）** → **Cookies** → `https://music.163.com`；
+3. 找到名为 `MUSIC_U` 的条目，复制其 **Value**，填入 Secret `NETEASE_COOKIE`。
+
+### 3. 开启 Actions
+
+上传后进入仓库 **Actions** 标签页，若提示禁用请点击 **Enable workflows**。
+
+工作流默认 **每天北京时间 09:30** 自动运行（GitHub 定时可能有 5~30 分钟延迟），也支持手动触发：
+
+**Actions → Brush Listening Records → Run workflow**
+
+### 4. 开启 Pages（数据看板）
+
+1. 进入 **Settings → Pages**；
+2. Source 选择 **Deploy from a branch**；
+3. Branch 选择 `main` 分支、目录选 **`/docs`**，保存；
+4. 稍等 1~2 分钟，访问 `https://<你的用户名>.github.io/<仓库名>/` 即可看到数据看板。
+
+> 注意：若仓库为 Private，免费账户无法使用 GitHub Pages，可将仓库设为 Public（data.json 中只包含播放数字，不含账号信息），或不开 Pages、直接在 Actions 日志查看结果。
+
+## 本地运行
+
+```bash
+pip install -r requirements.txt
+python main.py --dry-run   # 试运行（不联网）
+
+# 正式运行（本地环境变量方式）
+NETEASE_COOKIE=xxx NETEASE_COUNT=50 python main.py
+```
+
+## 常见问题
+
+- **登录返回 code 408 / -461 / 需要验证码？**
+  密码登录风控较严，请改用 `NETEASE_COOKIE`（MUSIC_U）方式。
+- **real 模式提示"没有任何可播放地址"后回退到仅上报？**
+  多为 Cookie 失效或风控，请更新 MUSIC_U；也可能是歌单全是 VIP 歌曲，换个免费歌单 ID。
+- **MUSIC_U 过期了怎么办？**
+  Cookie 有效期一般数月，失效后重新登录网页版并更新 Secret 即可。
+- **上报全部失败？**
+  检查 Cookie 是否正确、是否被风控；可调低 `NETEASE_COUNT`、调高 `NETEASE_INTERVAL` 后重试。
+- **看板没有数据？**
+  确认 Actions 已成功运行一次，且 `docs/data.json` 已被自动提交。
