@@ -1,1 +1,2 @@
-cmVxdWVzdHM+PTIuMzEuMApweWNyeXB0b2RvbWU+PTMuMjAuMAo=
+requests>=2.31.0
+pycryptodome>=3.20.0
