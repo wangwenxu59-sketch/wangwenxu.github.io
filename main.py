@@ -229,12 +229,14 @@ class NeteaseClient:
     # ---- 真实听歌 ----
     def stream_song(self, url: str, duration_s: int, speed: float = 1.0) -> int:
         """
-        以接近真实播放的速度拉取音频流（边听边计时）。
+        以接近真人听歌节奏拉取音频流（边听边计时）：
+        - 前 15% 稍微慢一点（前奏找人声）
+        - 中段 70% 匀速推进
+        - 尾段 15% 稍慢（落下尾奏/操作手机）
         返回实际"听"的秒数；异常中断时返回已听秒数。
         """
         start = time.time()
-        target = max(1, duration_s)
-        bytes_needed = BYTES_PER_SEC * target * speed
+        target = max(30, int(duration_s))
         got = 0
         try:
             with self.session.get(
@@ -243,7 +245,7 @@ class NeteaseClient:
             ) as resp:
                 if resp.status_code not in (200, 206):
                     return 0
-                for chunk in resp.iter_content(chunk_size=16384):
+                for chunk in resp.iter_content(chunk_size=8192):
                     if not chunk:
                         continue
                     got += len(chunk)
@@ -251,13 +253,17 @@ class NeteaseClient:
                     audio_time = got / BYTES_PER_SEC
                     if audio_time >= target:
                         break
-                    # 倍速控制：speed 越大拉流越快（每真实 1 秒拉 speed 秒音频）
-                    desired_elapsed = audio_time / speed
+                    # 节奏因子：pace>1 表示拉相同字节时睡眠更久，更像真人
+                    if audio_time < target * 0.15:
+                        pace = 1.35   # 前奏：把人声哼出来
+                    elif audio_time > target * 0.85:
+                        pace = 1.20   # 尾奏：稍微留一下
+                    else:
+                        pace = 1.00   # 中段接近实时
+                    desired_elapsed = (audio_time / speed) * pace
                     now = time.time() - start
                     if desired_elapsed > now:
-                        time.sleep(min(desired_elapsed - now, 5))
-            elapsed = time.time() - start
-            # 实际听歌时长 = 已拉取音频时长（不超过目标时长）
+                        time.sleep(min(desired_elapsed - now, 3))
             audio_time = got / BYTES_PER_SEC
             return int(min(target, max(audio_time, 0)))
         except Exception as exc:  # noqa: BLE001
@@ -265,28 +271,51 @@ class NeteaseClient:
             return int(time.time() - start)
 
     # ---- 上报播放记录 ----
-    def scrobble(self, song_id: int, played_seconds: int) -> bool:
-        """提交一条播放记录"""
-        log_entry = {
-            "action": "play",
-            "json": {
-                "type": "song",
-                "wifi": 0,
-                "download": 0,
-                "time": played_seconds,
-                "end": "playend",
-                "sourceId": "",
-                "id": song_id,
-                "mMids": [],
-                "hash": "",
-            },
-        }
+    def scrobble(self, song_id: int, duration_s: int, played_seconds: int = None) -> bool:
+        """
+        仿官方客户端的 4 段进度上报（playstart / 30% / 60% / playend）。
+        真实网易云客户端在播放过程中会分批上报进度，最后一条 end="playend"。
+        仅当最后一条的 time>=30s 且 end=playend 时，服务端才会把这条记录写入
+        "最近听过/累计听歌"统计。一次性把这些批次发完，能显著提高入库成功率。
+        """
+        if played_seconds is None:
+            played_seconds = duration_s
+        d = max(int(played_seconds), 35)  # 服务端的"听完"阈值
+
+        def _entry(action_time: int, end: str = "") -> dict:
+            return {
+                "action": "play",
+                "json": {
+                    "type": "song",
+                    "wifi": 0,
+                    "download": 0,
+                    "time": int(action_time),
+                    "end": end,
+                    "sourceId": "",
+                    "id": song_id,
+                    "mMids": [],
+                    "hash": "",
+                },
+            }
+
+        logs = [
+            _entry(5),                                # 进入播放器第 5s
+            _entry(d * 0.30),                         # 进度 30%
+            _entry(d * 0.60),                         # 进度 60%
+            _entry(d, end="playend"),                 # 结束（关键：服务端统计这条）
+        ]
         try:
             result = self._post(
                 "/weapi/feedback/weblog",
-                {"logs": json.dumps([log_entry])},
+                {"logs": json.dumps(logs)},
             )
-            return result.get("code") == 200
+            if result.get("code") != 200:
+                log(
+                    f"上报返回 code={result.get('code')}, "
+                    f"message={result.get('message', '')[:120]}"
+                )
+                return False
+            return True
         except Exception as exc:  # noqa: BLE001
             log(f"上报异常：{exc}")
             return False
@@ -374,6 +403,17 @@ def main() -> int:
         if not client.login_by_password(phone, password, country_code):
             return 1
 
+    # 校验 MUSIC_U 是否有效（失效直接退出，避免后续全部白跑）
+    try:
+        me = client._post("/weapi/nuser/account/get", {})
+        if me.get("code") != 200:
+            log(f"⚠ Cookie 校验失败：code={me.get('code')}，请重新填 MUSIC_U")
+            return 1
+        nickname = (me.get("profile") or {}).get("nickname", "?")
+        log(f"✅ Cookie 有效，登录用户：{nickname}")
+    except Exception as exc:  # noqa: BLE001
+        log(f"Cookie 校验异常：{exc}")
+
     # ---- 获取歌曲列表 ----
     if song_ids_env:
         base_songs = [int(s) for s in song_ids_env.split(",") if s.strip().isdigit()]
@@ -410,24 +450,32 @@ def main() -> int:
         played = 0
         if mode == "real":
             url = playable.get(song_id)
-            played = client.stream_song(url, duration, speed)
+            # 真人不会每次都听到最后一秒：在 0~min(30,duration/6) 秒内随机缩短
+            short = random.randint(0, min(30, max(1, duration // 6)))
+            target_seconds = max(60, duration - short)
+            played = client.stream_song(url, target_seconds, speed)
             if played <= 0:
                 log(f"第 {i + 1} 首《{name}》拉流失败，跳过")
                 time.sleep(2)
                 continue
             listened_total += played
-            log(f"({i + 1}/{count}) 听完《{name}》 {played}s，上报中…")
+            log(f"({i + 1}/{count}) 听完《{name}》 {played}s，4 段上报中…")
         else:
             played = random.randint(60, min(300, max(duration, 60)))
             log(f"({i + 1}/{count}) 模拟播放《{name}》 {played}s")
 
-        if client.scrobble(song_id, played):
+        if client.scrobble(song_id, duration, played):
             success += 1
         else:
             log(f"第 {i + 1} 次上报失败（song_id={song_id}）")
 
         if i < count - 1:
-            time.sleep(max(1.0, random.uniform(interval * 0.6, interval * 1.4)))
+            # 真人节奏：8% 概率出现一次"走神"长停顿；其余在 interval±60% 抖动
+            if random.random() < 0.08:
+                delay = random.uniform(interval * 3, interval * 6)
+            else:
+                delay = random.uniform(interval * 0.6, interval * 1.6)
+            time.sleep(max(1.0, delay))
 
     data = save_data(success, listened_total)
     hours = listened_total / 3600
