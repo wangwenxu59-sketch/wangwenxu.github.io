@@ -1,1 +1,7 @@
-X19weWNhY2hlX18vCioucHljCioucHlvCi5EU19TdG9yZQoqLmxvZwoudmVudi8KdmVudi8=
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.log
+.venv/
+venv/
