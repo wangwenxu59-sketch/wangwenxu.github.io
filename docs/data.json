@@ -1,5 +1,12 @@
 {
-  "totalPlays": 0,
-  "updatedAt": "",
-  "records": []
+  "totalPlays": 48,
+  "updatedAt": "2026-09-09T10:50:09+08:00",
+  "records": [
+    {
+      "date": "2026-09-09",
+      "plays": 48,
+      "seconds": 864
+    }
+  ],
+  "totalListenedSeconds": 864
 }
