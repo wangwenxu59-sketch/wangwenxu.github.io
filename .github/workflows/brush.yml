@@ -1,0 +1,50 @@
+  name: Brush Listening Records
+  
+  on:
+    workflow_dispatch:
+    schedule:
+      - cron: "30 1 * * *"
+  
+  permissions:
+    contents: write
+  
+  concurrency:
+    group: brush
+    cancel-in-progress: false
+  
+  jobs:
+    brush:
+      runs-on: ubuntu-latest
+      timeout-minutes: 240
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-python@v5
+          with:
+            python-version: "3.11"
+            cache: pip
+        - run: pip install -r requirements.txt
+        - name: Run brush script
+          env:
+            NETEASE_PHONE: ${{ secrets.NETEASE_PHONE }}
+            NETEASE_COUNTRY_CODE: ${{ secrets.NETEASE_COUNTRY_CODE }}
+            NETEASE_PASSWORD: ${{ secrets.NETEASE_PASSWORD }}
+            NETEASE_COOKIE: ${{ secrets.NETEASE_COOKIE }}
+            NETEASE_MODE: ${{ secrets.NETEASE_MODE }}
+            NETEASE_SPEED: ${{ secrets.NETEASE_SPEED }}
+            NETEASE_MAX_DURATION: ${{ secrets.NETEASE_MAX_DURATION }}
+            NETEASE_COUNT: ${{ secrets.NETEASE_COUNT }}
+            NETEASE_PLAYLIST: ${{ secrets.NETEASE_PLAYLIST }}
+            NETEASE_SONG_IDS: ${{ secrets.NETEASE_SONG_IDS }}
+            NETEASE_INTERVAL: ${{ secrets.NETEASE_INTERVAL }}
+          run: python main.py
+        - name: Commit records
+          run: |
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/data.json
+            if git diff --cached --quiet; then
+              echo "no changes to commit"
+            else
+              git commit -m "chore: update listening records $(date -u +%F)"
+              git push
+            fi
