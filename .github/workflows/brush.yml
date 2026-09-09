@@ -1,14 +1,12 @@
 name: Brush Listening Records
 
 on:
-  workflow_dispatch:       # 支持手动触发
+  workflow_dispatch:
   schedule:
-    # UTC 时间 01:30 = 北京时间 09:30，每天执行一次
-    # GitHub 定时任务可能延迟 5~30 分钟，属正常现象
     - cron: "30 1 * * *"
 
 permissions:
-  contents: write          # 允许提交 data.json 回仓库
+  contents: write
 
 concurrency:
   group: brush
@@ -17,7 +15,10 @@ concurrency:
 jobs:
   brush:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 360   # 6h 上限
+    env:
+      GOAL_TOTAL_PLAYS: "800"     # 此处可手动调成下次想刷到的累计目标
+      MAX_SELF_RETRIES: "12"       # 最多自续刷 12 次（约 800 首 ÷ 80/批 ≈ 10 次，留 2 次冗余）
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,4 +57,32 @@ jobs:
           else
             git commit -m "chore: update listening records $(date -u +%F)"
             git push
+          fi
+
+      - name: Self-continue if goal not reached
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GOAL="$GOAL_TOTAL_PLAYS"
+          MAX_RETRIES="$MAX_SELF_RETRIES"
+          if [ ! -f docs/data.json ]; then
+            echo "no data.json yet, skip"
+            exit 0
+          fi
+          CURRENT=$(jq -r '.totalPlays // 0' docs/data.json)
+          REMAINING=$((GOAL - CURRENT))
+          ITER_FILE=".brush_iter"
+          ITER=$(cat "$ITER_FILE" 2>/dev/null || echo 0)
+          echo "progress: totalPlays=$CURRENT, goal=$GOAL, remaining=$REMAINING, retry_iter=$ITER"
+          if [ "$REMAINING" -gt 0 ] && [ "$ITER" -lt "$MAX_RETRIES" ]; then
+            echo "self-dispatching next batch..."
+            printf "%d" $((ITER+1)) > "$ITER_FILE"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "$ITER_FILE"
+            git commit -m "brush: iter $((ITER+1))" || echo "iter file unchanged"
+            git push || true
+            gh api repos/${{ github.repository }}/actions/workflows/brush.yml/dispatches -X POST -f ref=main > /dev/null
+          else
+            echo "goal reached or max retries hit, stop"
           fi
