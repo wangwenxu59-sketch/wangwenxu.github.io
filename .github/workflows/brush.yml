@@ -1,12 +1,15 @@
 name: Brush Listening Records
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:       # 支持手动触发
   schedule:
+    # UTC 时间 01:30 = 北京时间 09:30，每天执行一次
+    # GitHub 定时任务可能延迟 5~30 分钟，属正常现象
     - cron: "30 1 * * *"
 
 permissions:
-  contents: write
+  contents: write          # 允许提交 data.json 回仓库
+  actions: write           # 允许 self-continue 触发下一批 workflow
 
 concurrency:
   group: brush
@@ -15,10 +18,7 @@ concurrency:
 jobs:
   brush:
     runs-on: ubuntu-latest
-    timeout-minutes: 360   # 6h 上限
-    env:
-      GOAL_TOTAL_PLAYS: "800"     # 此处可手动调成下次想刷到的累计目标
-      MAX_SELF_RETRIES: "12"       # 最多自续刷 12 次（约 800 首 ÷ 80/批 ≈ 10 次，留 2 次冗余）
+    timeout-minutes: 340
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,18 +30,20 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq > /dev/null
 
       - name: Run brush script
         env:
-          NETEASE_PHONE: ${{ secrets.NETEASE_PHONE }}
-          NETEASE_COUNTRY_CODE: ${{ secrets.NETEASE_COUNTRY_CODE }}
-          NETEASE_PASSWORD: ${{ secrets.NETEASE_PASSWORD }}
+          NETEASE_COOKIES: ${{ secrets.NETEASE_COOKIES }}
           NETEASE_COOKIE: ${{ secrets.NETEASE_COOKIE }}
           NETEASE_MODE: ${{ secrets.NETEASE_MODE }}
           NETEASE_SPEED: ${{ secrets.NETEASE_SPEED }}
           NETEASE_MAX_DURATION: ${{ secrets.NETEASE_MAX_DURATION }}
           NETEASE_COUNT: ${{ secrets.NETEASE_COUNT }}
+          NETEASE_GOAL: ${{ secrets.NETEASE_GOAL }}
+          NETEASE_ACCOUNT_GAP: ${{ secrets.NETEASE_ACCOUNT_GAP }}
           NETEASE_PLAYLIST: ${{ secrets.NETEASE_PLAYLIST }}
           NETEASE_SONG_IDS: ${{ secrets.NETEASE_SONG_IDS }}
           NETEASE_INTERVAL: ${{ secrets.NETEASE_INTERVAL }}
@@ -60,7 +62,10 @@ jobs:
           fi
 
       - name: Self-continue if goal not reached
+        if: always()
         env:
+          GOAL_TOTAL_PLAYS: 800
+          MAX_SELF_RETRIES: 20
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           GOAL="$GOAL_TOTAL_PLAYS"
@@ -82,7 +87,7 @@ jobs:
             git add "$ITER_FILE"
             git commit -m "brush: iter $((ITER+1))" || echo "iter file unchanged"
             git push || true
-            gh api repos/${{ github.repository }}/actions/workflows/brush.yml/dispatches -X POST -f ref=main > /dev/null
+            gh api repos/wangwenxu59-sketch/wangwenxu.github.io/actions/workflows/brush.yml/dispatches -X POST -f ref=main > /dev/null
           else
             echo "goal reached or max retries hit, stop"
           fi
