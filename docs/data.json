@@ -1,6 +1,6 @@
 {
-  "totalPlays": 155,
-  "updatedAt": "2026-09-10T12:25:37+08:00",
+  "totalPlays": 173,
+  "updatedAt": "2026-09-10T12:55:07+08:00",
   "records": [
     {
       "date": "2026-09-09",
@@ -9,17 +9,17 @@
     },
     {
       "date": "2026-09-10",
-      "plays": 107,
-      "seconds": 6324
+      "plays": 125,
+      "seconds": 7404
     }
   ],
-  "totalListenedSeconds": 7188,
+  "totalListenedSeconds": 8268,
   "accounts": [
     {
       "id": "0",
       "nickname": "31321332432",
-      "totalPlays": 155,
-      "totalListenedSeconds": 7188,
+      "totalPlays": 173,
+      "totalListenedSeconds": 8268,
       "records": [
         {
           "date": "2026-09-09",
@@ -28,8 +28,8 @@
         },
         {
           "date": "2026-09-10",
-          "plays": 107,
-          "seconds": 6324
+          "plays": 125,
+          "seconds": 7404
         }
       ]
     },
