@@ -77,14 +77,21 @@ jobs:
           CURRENT=$(jq -r '.totalPlays // 0' docs/data.json)
           REMAINING=$((GOAL - CURRENT))
           ITER_FILE=".brush_iter"
+          PREV_FILE=".brush_prev"
           ITER=$(cat "$ITER_FILE" 2>/dev/null || echo 0)
-          echo "progress: totalPlays=$CURRENT, goal=$GOAL, remaining=$REMAINING, retry_iter=$ITER"
+          PREV=$(cat "$PREV_FILE" 2>/dev/null || echo -1)
+          echo "progress: totalPlays=$CURRENT, prev=$PREV, goal=$GOAL, remaining=$REMAINING, retry_iter=$ITER"
+          if [ "$CURRENT" -le "$PREV" ] && [ "$ITER" -gt 0 ]; then
+            echo "no progress since last batch (cookie expired or quota exhausted), stop chain"
+            exit 0
+          fi
           if [ "$REMAINING" -gt 0 ] && [ "$ITER" -lt "$MAX_RETRIES" ]; then
             echo "self-dispatching next batch..."
             printf "%d" $((ITER+1)) > "$ITER_FILE"
+            echo "$CURRENT" > "$PREV_FILE"
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add "$ITER_FILE"
+            git add "$ITER_FILE" "$PREV_FILE"
             git commit -m "brush: iter $((ITER+1))" || echo "iter file unchanged"
             git push || true
             gh api repos/wangwenxu59-sketch/wangwenxu.github.io/actions/workflows/brush.yml/dispatches -X POST -f ref=main > /dev/null
