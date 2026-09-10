@@ -116,6 +116,10 @@ class NeteaseClient:
                 "Referer": "https://music.163.com",
                 "Accept": "*/*",
                 "Accept-Language": "zh-CN,zh;q=0.9",
+                # 海外服务器（GitHub Actions 等）访问会被风控：播放地址接口
+                # 对海外 IP 返回空。加 X-Real-IP 伪装国内出口（社区通用做法）。
+                "X-Real-IP": random.choice(["116.25.146.177", "218.76.205.99",
+                                            "112.45.28.101", "183.232.170.42"]),
             }
         )
         self.csrf = ""
@@ -209,22 +213,28 @@ class NeteaseClient:
         return infos
 
     def get_playable_urls(self, song_ids: list) -> dict:
-        """批量获取 128kbps 播放地址，返回 {id: url}（VIP 歌曲无 url 会被过滤）"""
+        """批量获取 128kbps 播放地址，返回 {id: url}（VIP 歌曲无 url 会被过滤）
+        海外 IP 偶发被风控返回空，最多重试 3 次。"""
         urls = {}
-        try:
-            result = self._post(
-                "/weapi/song/enhance/player/url",
-                {
-                    "ids": json.dumps(song_ids),
-                    "br": str(BITRATE_BPS),
-                    "csrf_token": self.csrf,
-                },
-            )
-            for d in result.get("data", []):
-                if d.get("url"):
-                    urls[d["id"]] = d["url"]
-        except Exception as exc:  # noqa: BLE001
-            log(f"获取播放地址失败：{exc}")
+        for attempt in range(3):
+            try:
+                result = self._post(
+                    "/weapi/song/enhance/player/url",
+                    {
+                        "ids": json.dumps(song_ids),
+                        "br": str(BITRATE_BPS),
+                        "csrf_token": self.csrf,
+                    },
+                )
+                for d in result.get("data", []):
+                    if d.get("url"):
+                        urls[d["id"]] = d["url"]
+                if urls:
+                    return urls
+                log(f"获取播放地址为空（第 {attempt + 1}/3 次），5s 后重试…")
+            except Exception as exc:  # noqa: BLE001
+                log(f"获取播放地址失败（第 {attempt + 1}/3 次）：{exc}")
+            time.sleep(5)
         return urls
 
     # ---- 真实听歌 ----
@@ -461,8 +471,8 @@ def _brush_one_account(idx: int, music_u: str, songs: list, infos: dict,
         my_playable = client.get_playable_urls(batch)
         log(f"账号{idx + 1}（{nickname}）可播放歌曲：{len(my_playable)} 首")
         if not my_playable:
-            log(f"账号{idx + 1} 无任何可播放地址，跳过该账号")
-            return {"id": str(idx), "nickname": nickname, "success": 0, "listened": 0}
+            log(f"⚠ 账号{idx + 1} 拿不到播放地址（可能被海外 IP 风控），回退仅上报模式")
+            mode = "report"
     my_songs = list(my_playable.keys()) if mode == "real" and my_playable else list(songs)
 
     target = min(count, max(0, quota_left))
