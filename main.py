@@ -455,8 +455,10 @@ def _brush_one_account(idx: int, music_u: str, songs: list, infos: dict,
     # 校验 MUSIC_U 是否有效（失效则跳过该账号，避免白跑）
     try:
         me = client._post("/weapi/nuser/account/get", {})
-        if me.get("code") != 200:
-            log(f"⚠ 账号{idx + 1} Cookie 校验失败：code={me.get('code')}，跳过")
+        # code=200 但 account=null 等于匿名访问（Cookie 已失效/被顶下线）
+        if me.get("code") != 200 or not me.get("account"):
+            log(f"⚠ 账号{idx + 1} Cookie 已失效（code={me.get('code')}, "
+                f"account={'null' if not me.get('account') else 'ok'}），跳过该账号")
             return {"id": str(idx), "nickname": nickname, "success": 0, "listened": 0}
         nickname = (me.get("profile") or {}).get("nickname", nickname)
         log(f"✅ 账号{idx + 1}（{nickname}）Cookie 有效")
