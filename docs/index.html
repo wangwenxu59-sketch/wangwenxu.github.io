@@ -154,13 +154,15 @@
     </div>
   </div>
 
-  <div class="panel">
-    <h2>近 30 天播放记录</h2>
+  <div class="panel" id="totalPanel">
+    <h2>近 30 天播放记录（全部账号汇总）</h2>
     <div class="chart" id="chart"></div>
     <div class="empty" id="empty" style="display:none">
       暂无数据，请在 GitHub Actions 完成一次运行后再来查看
     </div>
   </div>
+
+  <div id="accountPanels"></div>
 
   <div class="footer">
     数据来源：仓库 docs/data.json，由 GitHub Actions 定时任务自动写入<br>
@@ -168,7 +170,7 @@
   </div>
 </div>
 
-<script>
+  <script>
   // 本地预览（未部署）时的演示数据
   const DEMO = {
     totalPlays: 0,
@@ -179,6 +181,34 @@
   function todayStr(offset = 0) {
     const d = new Date(Date.now() - offset * 86400000);
     return d.toISOString().slice(0, 10);
+  }
+
+  // 渲染一张 30 天柱状图到指定容器
+  function renderChart(container, records) {
+    const days = [];
+    for (let i = 29; i >= 0; i--) days.push(todayStr(i));
+    const map = {};
+    (records || []).forEach(r => { map[r.date] = r.plays; });
+    const values = days.map(d => map[d] || 0);
+    const max = Math.max(...values, 1);
+    days.forEach((d, i) => {
+      const v = values[i];
+      const box = document.createElement('div');
+      box.className = 'bar-box';
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = Math.max(2, v / max * 140) + 'px';
+      const tip = document.createElement('div');
+      tip.className = 'tooltip';
+      tip.textContent = v + ' 次';
+      bar.appendChild(tip);
+      const label = document.createElement('div');
+      label.className = 'd';
+      label.textContent = d.slice(8) === '01' || i === 0 || i === 29 ? d.slice(5) : '';
+      box.appendChild(bar);
+      box.appendChild(label);
+      container.appendChild(box);
+    });
   }
 
   function render(data) {
@@ -204,44 +234,48 @@
         '最近更新：' + data.updatedAt.replace('T', ' ');
     }
 
-    // 近 30 天（含今天）
-    const days = [];
-    for (let i = 29; i >= 0; i--) days.push(todayStr(i));
-    const map = {};
-    (data.records || []).forEach(r => { map[r.date] = r.plays; });
-    const values = days.map(d => map[d] || 0);
-    const max = Math.max(...values, 1);
-
     const chart = document.getElementById('chart');
     if (!data.records || data.records.length === 0) {
       chart.style.display = 'none';
       document.getElementById('empty').style.display = 'block';
-      return;
+    } else {
+      renderChart(chart, data.records);
     }
-    days.forEach((d, i) => {
-      const v = values[i];
-      const box = document.createElement('div');
-      box.className = 'bar-box';
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.height = Math.max(2, v / max * 140) + 'px';
-      const tip = document.createElement('div');
-      tip.className = 'tooltip';
-      tip.textContent = v + ' 次';
-      bar.appendChild(tip);
-      const label = document.createElement('div');
-      label.className = 'd';
-      label.textContent = d.slice(8) === '01' || i === 0 || i === 29 ? d.slice(5) : '';
-      box.appendChild(bar);
-      box.appendChild(label);
-      chart.appendChild(box);
-    });
+
+    // 分账号面板（多账号模式下展示）
+    const accounts = Array.isArray(data.accounts) ? data.accounts : null;
+    if (accounts && accounts.length > 0) {
+      const wrap = document.getElementById('accountPanels');
+      accounts.forEach(acc => {
+        const panel = document.createElement('div');
+        panel.className = 'panel';
+        panel.style.marginTop = '16px';
+
+        const accToday = ((acc.records || []).find(r => r.date === today) || {}).plays || 0;
+        const accSecs = acc.totalListenedSeconds || 0;
+        const accHours = accSecs >= 3600 ? (accSecs / 3600).toFixed(1) + ' 小时'
+                       : Math.round(accSecs / 60) + ' 分钟';
+
+        const h2 = document.createElement('h2');
+        h2.innerHTML = '🎵 ' + (acc.nickname || ('账号' + (Number(acc.id) + 1))) +
+          '　<span style="font-size:13px;color:#999;font-weight:400">' +
+          '今日 ' + accToday + ' · 累计 ' + (acc.totalPlays || 0) +
+          ' · 听歌 ' + accHours + '</span>';
+        panel.appendChild(h2);
+
+        const sub = document.createElement('div');
+        sub.className = 'chart';
+        renderChart(sub, acc.records);
+        panel.appendChild(sub);
+        wrap.appendChild(panel);
+      });
+    }
   }
 
   fetch('data.json', { cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(render)
     .catch(() => render(DEMO));
-</script>
+  </script>
 </body>
 </html>
