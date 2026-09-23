@@ -2,411 +2,495 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>共享文件打印站</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>招投标信息聚合站</title>
+<meta name="description" content="聚合全国招标公告、中标公示与招投标政策法规">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
 <style>
-  :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --bg: #f5f7fb;
-    --card: #ffffff;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --radius: 12px;
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --fg:#1f2328; --muted:#656d76;
+    --border:#d8dee4; --primary:#0969da; --primary-bg:#ddf4ff;
+    --accent:#8250df; --success:#1a7f37; --success-bg:#dafbe1;
+    --warning:#9a6700; --warning-bg:#fff8c5; --danger:#cf222e; --danger-bg:#ffebe9;
+    --shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.06);
+    --radius:10px;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-  header {
-    background: linear-gradient(135deg, #2563eb, #4f46e5);
-    color: #fff;
-    padding: 36px 20px 30px;
-    text-align: center;
-  }
-  header h1 { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
-  header p { margin-top: 8px; opacity: .9; font-size: 14px; }
-  .container { max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 
-  .toolbar {
-    display: flex; gap: 12px; align-items: center;
-    margin-bottom: 20px; flex-wrap: wrap;
-  }
-  #search {
-    flex: 1; min-width: 220px;
-    padding: 11px 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 14px;
-    outline: none;
-    background: var(--card);
-    transition: border .2s, box-shadow .2s;
-  }
-  #search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-  .stats { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  /* Layout */
+  .container{max-width:1200px;margin:0 auto;padding:0 20px}
+  header.app-header{background:linear-gradient(135deg,#0969da 0%,#8250df 100%);color:#fff;padding:32px 0 28px;box-shadow:var(--shadow)}
+  header.app-header h1{font-size:26px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+  header.app-header p{opacity:.92;font-size:14px}
+  header.app-meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;font-size:12px;opacity:.88}
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 16px;
-  }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    display: flex; flex-direction: column; gap: 10px;
-    transition: transform .15s, box-shadow .15s;
-  }
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(31,41,55,.08);
-  }
-  .file-head { display: flex; align-items: center; gap: 12px; }
-  .file-icon {
-    width: 44px; height: 44px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0;
-  }
-  .icon-pdf   { background: #fee2e2; }
-  .icon-img   { background: #dbeafe; }
-  .icon-text  { background: #dcfce7; }
-  .icon-other { background: #f3f4f6; }
-  .file-name {
-    font-weight: 600; font-size: 14px;
-    word-break: break-all; line-height: 1.4;
-  }
-  .file-meta { font-size: 12px; color: var(--muted); }
-  .card-actions { display: flex; gap: 8px; margin-top: auto; }
-  .btn {
-    flex: 1;
-    border: none; border-radius: 8px;
-    padding: 9px 0;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer;
-    transition: background .15s, opacity .15s;
-  }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:hover { background: var(--primary-dark); }
-  .btn-ghost { background: #eef2ff; color: var(--primary); }
-  .btn-ghost:hover { background: #e0e7ff; }
+  /* Tabs */
+  nav.tabs{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  nav.tabs .container{display:flex;gap:4px;overflow-x:auto}
+  nav.tabs button{padding:14px 18px;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:.15s}
+  nav.tabs button:hover{color:var(--fg)}
+  nav.tabs button.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:500}
 
-  .empty {
-    text-align: center; color: var(--muted);
-    padding: 60px 20px; font-size: 14px; line-height: 2;
-  }
+  /* Filter bar */
+  .filter-bar{background:var(--card);padding:18px 0;border-bottom:1px solid var(--border)}
+  .filter-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:10px;align-items:center}
+  .filter-grid input,.filter-grid select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:13px;color:var(--fg);outline:none;transition:.15s}
+  .filter-grid input:focus,.filter-grid select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(9,105,218,.15)}
+  .filter-grid button{padding:9px 16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--fg)}
+  .filter-grid button:hover{background:#eaeef2}
 
-  /* 预览弹窗 */
-  .modal-mask {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(17,24,39,.55);
-    z-index: 100;
-    padding: 24px;
-  }
-  .modal-mask.open { display: flex; align-items: center; justify-content: center; }
-  .modal {
-    background: #fff;
-    border-radius: 14px;
-    width: min(860px, 100%);
-    max-height: 92vh;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 24px 60px rgba(0,0,0,.25);
-  }
-  .modal-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-  }
-  .modal-header .title {
-    flex: 1; font-weight: 600; font-size: 15px;
-    word-break: break-all;
-  }
-  .modal-header .btn { flex: none; padding: 8px 18px; }
-  .close-x {
-    border: none; background: #f3f4f6; color: var(--text);
-    width: 34px; height: 34px; border-radius: 8px;
-    font-size: 16px; cursor: pointer; flex-shrink: 0;
-  }
-  .close-x:hover { background: #e5e7eb; }
-  .modal-body {
-    flex: 1; overflow: auto;
-    padding: 18px;
-    background: #fafafa;
-  }
-  .modal-body iframe { width: 100%; height: 65vh; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
-  .modal-body img.preview-img { max-width: 100%; display: block; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.1); }
-  .modal-body pre {
-    white-space: pre-wrap; word-break: break-word;
-    font-family: "SFMono-Regular", Consolas, monospace;
-    font-size: 13px; line-height: 1.7;
-    background: #fff; padding: 20px;
-    border: 1px solid var(--border); border-radius: 8px;
-  }
-  .hint { font-size: 13px; color: var(--muted); line-height: 1.8; padding: 10px 0; }
+  /* Stats */
+  .stats{padding:14px 0;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+  .stats .right{display:flex;gap:8px;align-items:center}
+  .sort-select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:13px}
 
-  footer {
-    text-align: center; color: var(--muted);
-    font-size: 12px; padding: 30px 20px; line-height: 2;
-  }
-  footer a { color: var(--primary); text-decoration: none; }
+  /* Card grid */
+  .card-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;padding-bottom:40px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);cursor:pointer;transition:.18s;display:flex;flex-direction:column;gap:10px;position:relative}
+  .card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .card .head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .card .badges{display:flex;flex-wrap:wrap;gap:6px}
+  .badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:500;line-height:1.4}
+  .badge.cat{background:var(--primary-bg);color:var(--primary)}
+  .badge.region{background:#f0f1f3;color:#424a53}
+  .badge.status-open{background:var(--success-bg);color:var(--success)}
+  .badge.status-soon{background:var(--warning-bg);color:var(--warning)}
+  .badge.status-closed{background:#eaeef2;color:var(--muted)}
+  .badge.status-winner{background:#f3e8ff;color:var(--accent)}
+  .card h3{font-size:15px;font-weight:600;line-height:1.5;color:var(--fg);flex:1}
+  .card .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px;color:var(--muted)}
+  .card .meta b{color:#424a53;font-weight:500}
+  .card .footer{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);padding-top:8px;border-top:1px dashed var(--border)}
+  .empty{text-align:center;padding:60px 20px;color:var(--muted);background:var(--card);border-radius:var(--radius);border:1px dashed var(--border)}
+  .empty .icon{font-size:42px;margin-bottom:8px;opacity:.6}
 
-  @media (max-width: 560px) {
-    header h1 { font-size: 20px; }
-    .modal-header { flex-wrap: wrap; }
+  /* Modal */
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-content{background:var(--card);border-radius:var(--radius);max-width:780px;width:100%;max-height:88vh;overflow-y:auto;position:relative;animation:slideUp .2s ease}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .modal-content .close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted);z-index:1}
+  .modal-content .close:hover{background:#eaeef2;color:var(--fg)}
+  .modal-body{padding:28px}
+  .modal-body h2{font-size:20px;font-weight:600;margin-bottom:14px;line-height:1.5;padding-right:40px}
+  .modal-body .badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .modal-body .info-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:14px}
+  .modal-body .info-table th,.modal-body .info-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .modal-body .info-table th{background:var(--bg);font-weight:500;color:var(--muted);width:110px;font-size:13px}
+  .modal-body .info-table td{color:var(--fg)}
+  .modal-body .summary{background:var(--bg);padding:14px;border-radius:8px;margin-bottom:18px;font-size:14px;line-height:1.7;white-space:pre-wrap}
+  .modal-body .actions{display:flex;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border)}
+  .modal-body .actions a,.modal-body .actions button{padding:10px 18px;border-radius:8px;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:#0860c7;text-decoration:none}
+  .btn-secondary{background:var(--bg);color:var(--fg);border:1px solid var(--border)}
+  .btn-secondary:hover{background:#eaeef2;text-decoration:none}
+
+  /* About */
+  .about{padding:30px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:40px}
+  .about h3{font-size:16px;margin:18px 0 8px;color:var(--fg)}
+  .about p,.about li{font-size:14px;color:#424a53;line-height:1.8}
+  .about ul{padding-left:22px;margin-bottom:14px}
+  .about code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:13px}
+
+  footer.app-footer{text-align:center;padding:30px 20px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);background:var(--card)}
+
+  @media(max-width:768px){
+    .filter-grid{grid-template-columns:1fr 1fr}
+    .filter-grid input{grid-column:span 2}
+    .card-list{grid-template-columns:1fr}
+    header.app-header{padding:24px 0 20px}
+    header.app-header h1{font-size:22px}
+    .modal-body{padding:20px}
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1 id="siteName">📄 共享文件打印站</h1>
-  <p id="siteSub">文件共享 · 在线预览 · 一键打印</p>
+<header class="app-header">
+  <div class="container">
+    <h1>📋 招投标信息聚合</h1>
+    <p>全国招标公告 · 中标公示 · 政策法规 · 一站检索</p>
+    <div class="app-meta" id="metaBar">数据加载中…</div>
+  </div>
 </header>
 
-<div class="container">
-  <div class="toolbar">
-    <input id="search" type="search" placeholder="🔍 搜索文件名…" autocomplete="off">
-    <span class="stats" id="stats"></span>
+<nav class="tabs">
+  <div class="container">
+    <button data-tab="bids" class="active">📦 招标公告</button>
+    <button data-tab="winners">🏆 中标公示</button>
+    <button data-tab="policies">📜 政策法规</button>
+    <button data-tab="about">ℹ️ 关于本站</button>
   </div>
-  <div class="grid" id="grid"></div>
-  <div class="empty" id="empty" style="display:none"></div>
-</div>
+</nav>
 
-<!-- 预览弹窗 -->
-<div class="modal-mask" id="mask">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="title" id="modalTitle"></div>
-      <button class="btn btn-primary" onclick="printCurrent()">🖨 打印</button>
-      <button class="btn btn-ghost" onclick="downloadCurrent()">⬇ 下载</button>
-      <button class="close-x" onclick="closeModal()">✕</button>
+<section class="filter-bar">
+  <div class="container">
+    <div class="filter-grid" id="filterGrid">
+      <input type="search" id="searchInput" placeholder="🔍 搜索标题、采购人、关键词…">
+      <select id="regionFilter"><option value="">所有地区</option></select>
+      <select id="categoryFilter"><option value="">所有类型</option></select>
+      <select id="dateFilter">
+        <option value="">所有时间</option>
+        <option value="7">近 7 天</option>
+        <option value="30">近 30 天</option>
+        <option value="90">近 90 天</option>
+      </select>
+      <select id="industryFilter"><option value="">所有行业</option></select>
+      <button id="resetBtn">重置</button>
     </div>
+  </div>
+</section>
+
+<main class="container">
+  <div class="stats">
+    <span id="statsText">共 0 条</span>
+    <div class="right">
+      <span style="font-size:12px">排序：</span>
+      <select class="sort-select" id="sortSelect">
+        <option value="date-desc">最新发布</option>
+        <option value="date-asc">最早发布</option>
+        <option value="deadline-asc">截止最近</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="resultList" class="card-list"></div>
+
+  <div id="empty" class="empty" style="display:none">
+    <div class="icon">🔍</div>
+    <div>没有匹配的结果</div>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <button class="close" id="modalClose">×</button>
     <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
 
-<footer>
-  将文件放入仓库 <b>files/</b> 文件夹并推送，文件列表自动更新 · 通过 GitHub Pages 免费访问<br>
-  Powered by GitHub Pages · 简单 · 便捷 · 免费托管
+<footer class="app-footer">
+  <div>📋 招投标信息聚合站 · 数据来源公开网络 · 仅供学习参考</div>
+  <div style="margin-top:6px">最终结果以官方发布为准 · 本站不承担任何因数据误差产生的责任</div>
 </footer>
 
 <script>
-/* ================= 可自定义配置 ================= */
+/* ==================== CONFIG ==================== */
 const CONFIG = {
-  siteName: "共享文件打印站",
-  subtitle: "文件共享 · 在线预览 · 一键打印",
-  manifest: "files.json"   // 文件清单（由 GitHub Actions 自动生成）
+  siteName: '招投标信息聚合站',
+  dataFiles: {
+    bids: 'data/bids.json',
+    winners: 'data/winners.json',
+    policies: 'data/policies.json',
+  },
 };
-/* =============================================== */
 
-document.getElementById("siteName").textContent = "📄 " + CONFIG.siteName;
-document.getElementById("siteSub").textContent = CONFIG.subtitle;
-
-let FILES = [];
-let current = null;   // 当前预览的文件
-
-const IMG_EXT  = ["jpg","jpeg","png","gif","webp","bmp","svg"];
-const TXT_EXT  = ["txt","md","log","csv","json","xml","html","js","css","py"];
-
-function extOf(path) {
-  const m = path.toLowerCase().match(/\.([a-z0-9]+)$/);
-  return m ? m[1] : "";
-}
-function typeOf(f) {
-  const e = extOf(f.path);
-  if (e === "pdf") return "pdf";
-  if (IMG_EXT.includes(e)) return "img";
-  if (TXT_EXT.includes(e)) return "text";
-  return "other";
-}
-function fmtSize(b) {
-  if (b < 1024) return b + " B";
-  if (b < 1048576) return (b/1024).toFixed(1) + " KB";
-  return (b/1048576).toFixed(2) + " MB";
-}
-function fmtDate(s) {
-  if (!s) return "";
-  return String(s).replace("T", " ").slice(0, 16);
-}
-
-const ICONS = {
-  pdf:  { icon: "📕", cls: "icon-pdf",  label: "PDF" },
-  img:  { icon: "🖼️", cls: "icon-img",  label: "图片" },
-  text: { icon: "📝", cls: "icon-text", label: "文本" },
-  other:{ icon: "📦", cls: "icon-other",label: "文件" }
+const STATE = {
+  currentTab: 'bids',
+  data: { bids: [], winners: [], policies: [] },
+  filters: { q: '', region: '', category: '', industry: '', date: '' },
+  sort: 'date-desc',
 };
+
+/* ==================== 数据加载 ==================== */
+async function loadAll() {
+  for (const key of Object.keys(CONFIG.dataFiles)) {
+    try {
+      const res = await fetch(CONFIG.dataFiles[key] + '?t=' + Date.now());
+      if (!res.ok) throw new Error(res.status);
+      STATE.data[key] = await res.json();
+    } catch (e) {
+      console.warn('加载失败：', CONFIG.dataFiles[key], e);
+      STATE.data[key] = [];
+    }
+  }
+  updateMeta();
+  populateFilterOptions();
+  render();
+}
+
+/* ==================== 顶部 meta 信息 ==================== */
+function updateMeta() {
+  const total = STATE.data.bids.length + STATE.data.winners.length + STATE.data.policies.length;
+  const latest = [...STATE.data.bids, ...STATE.data.winners]
+    .map(x => x.publishDate).filter(Boolean).sort().reverse()[0];
+  document.getElementById('metaBar').innerHTML = `
+    <span>📊 共收录 ${total} 条</span>
+    <span>·</span>
+    <span>📅 最近更新：${latest || '—'}</span>
+    <span>·</span>
+    <span>🔄 自动更新已配置</span>
+  `;
+}
+
+/* ==================== 筛选选项 ==================== */
+function populateFilterOptions() {
+  const all = [...STATE.data.bids, ...STATE.data.winners, ...STATE.data.policies];
+  const regions = [...new Set(all.map(x => x.region).filter(Boolean))].sort();
+  const cats = [...new Set(all.map(x => x.category).filter(Boolean))].sort();
+  const industries = [...new Set(all.flatMap(x => x.tags || []))].sort();
+
+  fillSelect('regionFilter', regions, '地区');
+  fillSelect('categoryFilter', cats, '类型');
+  fillSelect('industryFilter', industries, '行业');
+}
+function fillSelect(id, options, allLabel) {
+  const sel = document.getElementById(id);
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">所有${allLabel}</option>` +
+    options.map(o => `<option value="${escapeAttr(o)}">${escapeHtml(o)}</option>`).join('');
+  sel.value = cur;
+}
+
+/* ==================== 渲染 ==================== */
+function getCurrentData() {
+  return STATE.data[STATE.currentTab] || [];
+}
 
 function render() {
-  const kw = document.getElementById("search").value.trim().toLowerCase();
-  const list = FILES.filter(f => f.name.toLowerCase().includes(kw));
-  const grid = document.getElementById("grid");
-  const empty = document.getElementById("empty");
-  grid.innerHTML = "";
+  let items = [...getCurrentData()];
+  const f = STATE.filters;
 
-  document.getElementById("stats").textContent = `共 ${FILES.length} 个文件`;
-  empty.style.display = "none";
+  if (f.q) {
+    const q = f.q.toLowerCase();
+    items = items.filter(x =>
+      (x.title || '').toLowerCase().includes(q) ||
+      (x.buyer || '').toLowerCase().includes(q) ||
+      (x.agency || '').toLowerCase().includes(q) ||
+      (x.summary || '').toLowerCase().includes(q) ||
+      (x.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+  }
+  if (f.region) items = items.filter(x => x.region === f.region);
+  if (f.category) items = items.filter(x => x.category === f.category);
+  if (f.industry) items = items.filter(x => (x.tags || []).includes(f.industry));
 
-  if (!list.length) {
-    empty.style.display = "block";
-    empty.innerHTML = FILES.length
-      ? `没有匹配 “${kw}” 的文件`
-      : `<b>还没有共享文件</b><br>将文件放入仓库的 <b>files/</b> 文件夹并推送到 GitHub<br>文件列表会由 GitHub Actions 自动更新`;
-    return;
+  if (f.date && STATE.currentTab !== 'policies') {
+    const days = parseInt(f.date);
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
+    items = items.filter(x => {
+      if (!x.publishDate) return false;
+      return new Date(x.publishDate) >= cutoff;
+    });
   }
 
-  list.forEach((f, i) => {
-    const t = typeOf(f);
-    const meta = ICONS[t];
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <div class="file-head">
-        <div class="file-icon ${meta.cls}">${meta.icon}</div>
-        <div>
-          <div class="file-name">${escapeHtml(f.name)}</div>
-          <div class="file-meta">${meta.label} · ${fmtSize(f.size || 0)}${f.date ? " · " + fmtDate(f.date) : ""}</div>
-        </div>
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-ghost" data-act="preview">👁 预览</button>
-        <button class="btn btn-primary" data-act="print">🖨 打印</button>
-      </div>`;
-    card.querySelector('[data-act="preview"]').onclick = () => openPreview(f);
-    card.querySelector('[data-act="print"]').onclick  = () => openPreview(f, true);
-    grid.appendChild(card);
+  items.sort((a, b) => {
+    if (STATE.sort === 'date-desc') return (b.publishDate || '').localeCompare(a.publishDate || '');
+    if (STATE.sort === 'date-asc') return (a.publishDate || '').localeCompare(b.publishDate || '');
+    if (STATE.sort === 'deadline-asc') return (a.deadline || '9999').localeCompare(b.deadline || '9999');
+    return 0;
+  });
+
+  document.getElementById('statsText').textContent =
+    `共 ${items.length} 条${STATE.filters.q ? '（已筛选）' : ''}`;
+
+  const list = document.getElementById('resultList');
+  const empty = document.getElementById('empty');
+
+  if (items.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = items.map(cardHtml).join('');
+  list.querySelectorAll('.card').forEach(el => {
+    el.addEventListener('click', () => openDetail(el.dataset.id));
   });
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
+function cardHtml(item) {
+  const status = computeStatus(item);
+  return `
+    <article class="card" data-id="${escapeAttr(item.id)}">
+      <div class="head">
+        <div class="badges">
+          <span class="badge cat">${escapeHtml(item.category || '')}</span>
+          ${item.region ? `<span class="badge region">📍 ${escapeHtml(item.region)}</span>` : ''}
+          ${status ? `<span class="badge ${status.cls}">${status.text}</span>` : ''}
+        </div>
+      </div>
+      <h3>${escapeHtml(item.title || '')}</h3>
+      <div class="meta">
+        ${item.buyer ? `<div><b>采购人</b> ${escapeHtml(truncate(item.buyer, 22))}</div>` : ''}
+        ${item.budgetText ? `<div><b>预算</b> ${escapeHtml(item.budgetText)}</div>` : (item.winner ? `<div><b>中标人</b> ${escapeHtml(truncate(item.winner, 22))}</div>` : '')}
+        ${item.publishDate ? `<div><b>发布</b> ${escapeHtml(item.publishDate)}</div>` : ''}
+        ${item.deadline ? `<div><b>截止</b> ${escapeHtml(formatDate(item.deadline))}</div>` : ''}
+      </div>
+      <div class="footer">
+        <span>📰 ${escapeHtml(item.source || '')}</span>
+        <span>${escapeHtml(item.id || '')}</span>
+      </div>
+    </article>
+  `;
 }
 
-/* ---------- 预览 ---------- */
-function openPreview(f, autoPrint) {
-  current = f;
-  document.getElementById("modalTitle").textContent = f.name;
-  const body = document.getElementById("modalBody");
-  body.innerHTML = "";
-  const t = typeOf(f);
+function computeStatus(item) {
+  if (STATE.currentTab === 'winners') return { cls: 'status-winner', text: '已中标' };
+  if (STATE.currentTab === 'policies') return null;
+  if (!item.deadline) return { cls: 'status-open', text: '进行中' };
+  const d = new Date(item.deadline);
+  const now = new Date();
+  if (d < now) return { cls: 'status-closed', text: '已截止' };
+  const diff = (d - now) / 86400000;
+  if (diff <= 3) return { cls: 'status-soon', text: '即将截止' };
+  return { cls: 'status-open', text: '进行中' };
+}
 
-  if (t === "pdf") {
-    const iframe = document.createElement("iframe");
-    iframe.src = f.path;
-    body.appendChild(iframe);
-    if (autoPrint) {
-      const hint = document.createElement("div");
-      hint.className = "hint";
-      hint.textContent = "提示：PDF 已加载，若未自动弹出打印窗口，请稍候或在预览框内按 Ctrl+P。";
-      body.appendChild(hint);
-      iframe.onload = () => setTimeout(() => {
-        try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch (e) {}
-      }, 600);
-    }
-  } else if (t === "img") {
-    const img = document.createElement("img");
-    img.className = "preview-img";
-    img.src = f.path;
-    body.appendChild(img);
-    if (autoPrint) setTimeout(() => printCurrent(), 300);
-  } else if (t === "text") {
-    fetch(f.path).then(r => r.text()).then(txt => {
-      const pre = document.createElement("pre");
-      pre.textContent = txt;
-      body.innerHTML = "";
-      body.appendChild(pre);
-      if (autoPrint) setTimeout(() => printCurrent(), 200);
-    }).catch(() => {
-      body.innerHTML = '<div class="hint">无法读取文件内容，请直接下载后打开。</div>';
-    });
-  } else {
-    body.innerHTML = '<div class="hint">该文件类型不支持在线预览，请点击「下载」保存后打开或打印。</div>';
-  }
-  document.getElementById("mask").classList.add("open");
+/* ==================== 详情弹窗 ==================== */
+function openDetail(id) {
+  const item = getCurrentData().find(x => x.id === id);
+  if (!item) return;
+
+  const rows = [];
+  if (item.region) rows.push(['地区', item.region]);
+  if (item.category) rows.push(['类型', item.category]);
+  if (item.buyer) rows.push(['采购人', item.buyer]);
+  if (item.agency) rows.push(['代理机构', item.agency]);
+  if (item.budgetText) rows.push(['预算', item.budgetText]);
+  if (item.winner) rows.push(['中标人', item.winner]);
+  if (item.winnerAmount) rows.push(['中标金额', item.winnerAmount]);
+  if (item.publishDate) rows.push(['发布日期', item.publishDate]);
+  if (item.deadline) rows.push(['截止时间', formatDate(item.deadline)]);
+  if (item.source) rows.push(['信息来源', item.source]);
+  if (item.id) rows.push(['编号', item.id]);
+
+  const tagsHtml = (item.tags || []).length
+    ? `<div style="margin-bottom:14px">${item.tags.map(t => `<span class="badge cat" style="margin-right:6px">#${escapeHtml(t)}</span>`).join('')}</div>`
+    : '';
+
+  const summaryHtml = item.summary
+    ? `<div class="summary">${escapeHtml(item.summary)}</div>` : '';
+
+  const actions = [];
+  if (item.url) actions.push(`<a class="btn-primary" href="${escapeAttr(item.url)}" target="_blank" rel="noopener">🔗 查看原文</a>`);
+  actions.push(`<button class="btn-secondary" onclick="copyShareLink('${escapeAttr(item.id)}')">📋 复制链接</button>`);
+  actions.push(`<button class="btn-secondary" onclick="window.print()">🖨 打印详情</button>`);
+
+  document.getElementById('modalBody').innerHTML = `
+    <h2>${escapeHtml(item.title || '')}</h2>
+    <div class="badges">
+      ${item.category ? `<span class="badge cat">${escapeHtml(item.category)}</span>` : ''}
+      ${item.region ? `<span class="badge region">📍 ${escapeHtml(item.region)}</span>` : ''}
+    </div>
+    ${tagsHtml}
+    ${summaryHtml}
+    <table class="info-table">
+      <tbody>${rows.map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(v)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="actions">${actions.join('')}</div>
+  `;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
-  document.getElementById("mask").classList.remove("open");
-  document.getElementById("modalBody").innerHTML = "";
-  current = null;
-}
-document.getElementById("mask").addEventListener("click", e => {
-  if (e.target === e.currentTarget) closeModal();
-});
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
-
-function downloadCurrent() {
-  if (!current) return;
-  const a = document.createElement("a");
-  a.href = current.path;
-  a.download = current.name;
-  a.click();
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
-/* ---------- 打印 ---------- */
-function printCurrent() {
-  if (!current) return;
-  const t = typeOf(current);
-  if (t === "pdf") {
-    // 直接打印内嵌 PDF
-    const iframe = document.querySelector("#modalBody iframe");
-    if (iframe) { try { iframe.contentWindow.focus(); iframe.contentWindow.print(); return; } catch (e) {} }
-    window.open(current.path, "_blank");
-    return;
-  }
-  if (t === "img") {
-    printHtml(`<img src="${current.path}" style="max-width:100%">`, current.name);
-    return;
-  }
-  if (t === "text") {
-    fetch(current.path).then(r => r.text()).then(txt => {
-      printHtml(`<pre style="white-space:pre-wrap;font-family:Consolas,monospace;font-size:12pt;line-height:1.7">${escapeHtml(txt)}</pre>`, current.name);
-    });
-    return;
-  }
-  window.open(current.path, "_blank");
-}
-
-function printHtml(innerHtml, title) {
-  const iframe = document.createElement("iframe");
-  iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
-  document.body.appendChild(iframe);
-  const doc = iframe.contentDocument;
-  doc.open();
-  doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title || "")}</title>
-    <style>@page{margin:15mm} body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:10px}</style>
-    </head><body>${innerHtml}</body></html>`);
-  doc.close();
-  iframe.onload = () => {
-    setTimeout(() => {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-      setTimeout(() => iframe.remove(), 2000);
-    }, 300);
-  };
-}
-
-/* ---------- 加载清单 ---------- */
-document.getElementById("search").addEventListener("input", render);
-
-fetch(CONFIG.manifest)
-  .then(r => { if (!r.ok) throw new Error("manifest missing"); return r.json(); })
-  .then(data => { FILES = Array.isArray(data) ? data : []; render(); })
-  .catch(() => {
-    FILES = []; render();
-    const empty = document.getElementById("empty");
-    empty.innerHTML =
-      '<b>未找到 files.json 文件清单</b><br>' +
-      '· 部署在 GitHub 时：推送后 Action 会自动生成<br>' +
-      '· 本地预览时：在项目目录运行 <code>python generate_manifest.py</code>，再执行 <code>python -m http.server</code> 打开 <code>http://localhost:8000</code>';
+function copyShareLink(id) {
+  const url = location.origin + location.pathname + '#' + STATE.currentTab + '=' + id;
+  navigator.clipboard.writeText(url).then(() => {
+    flashToast('链接已复制');
+  }).catch(() => {
+    flashToast('复制失败，请手动选择地址栏');
   });
+}
+
+function flashToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1f2328;color:#fff;padding:10px 20px;border-radius:8px;z-index:200;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .2s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.opacity = '0', 1800);
+}
+
+/* ==================== 工具 ==================== */
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+function escapeAttr(s) { return escapeHtml(s); }
+function truncate(s, n) {
+  if (!s) return '';
+  return s.length > n ? s.slice(0, n) + '…' : s;
+}
+function formatDate(s) {
+  if (!s) return '';
+  return s.replace('T', ' ');
+}
+function today() { return new Date().toISOString().slice(0, 10); }
+
+/* ==================== 事件 ==================== */
+document.querySelectorAll('nav.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.currentTab = btn.dataset.tab;
+    document.getElementById('industryFilter').parentElement.style.display =
+      STATE.currentTab === 'policies' ? 'none' : '';
+    document.getElementById('dateFilter').parentElement.style.display =
+      STATE.currentTab === 'policies' ? 'none' : '';
+    render();
+  });
+});
+
+['searchInput', 'regionFilter', 'categoryFilter', 'dateFilter', 'industryFilter'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    const map = { searchInput: 'q', regionFilter: 'region', categoryFilter: 'category', dateFilter: 'date', industryFilter: 'industry' };
+    STATE.filters[map[id]] = e.target.value.trim();
+    render();
+  });
+});
+
+document.getElementById('sortSelect').addEventListener('change', e => {
+  STATE.sort = e.target.value;
+  render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  STATE.filters = { q: '', region: '', category: '', industry: '', date: '' };
+  document.getElementById('searchInput').value = '';
+  document.getElementById('regionFilter').value = '';
+  document.getElementById('categoryFilter').value = '';
+  document.getElementById('dateFilter').value = '';
+  document.getElementById('industryFilter').value = '';
+  render();
+});
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// 处理深链接
+window.addEventListener('hashchange', () => {
+  const m = location.hash.match(/^#(\w+)=(.+)$/);
+  if (m && STATE.data[m[1]]) {
+    const tabBtn = document.querySelector(`nav.tabs button[data-tab="${m[1]}"]`);
+    if (tabBtn) tabBtn.click();
+    setTimeout(() => openDetail(decodeURIComponent(m[2])), 100);
+  }
+});
+
+/* 启动 */
+loadAll();
 </script>
 </body>
 </html>
