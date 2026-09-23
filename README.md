@@ -72,7 +72,21 @@ bid-info-site/
 > 中标公示多两个字段：`winner`（中标人）、`winnerAmount`（中标金额）。
 > 政策法规没有 `deadline` 字段。
 
-### 方式 B：自动抓取（可选）
+### 方式 B：自动抓取（已启用 ✅）
+
+ 已配置为**每 3 小时**自动运行：
+- 抓取中国政府采购网最新公告（默认 8 页 ≈ 160 条/次）
+- 自动分类：招标类 → ，中标/成交类 → 
+- 按 URL 去重合并，每文件最多保留 800 条（滚动更新）
+- 自动提交并触发 Pages 重新部署
+
+也可在 GitHub → Actions → Scrape bid data → Run workflow 手动触发（可指定页数）。
+
+抓取脚本使用 Python 标准库（urllib + re），无需安装依赖。目标站改版时调整  中的正则即可。
+
+### 方式 C：关键词定向抓取
+
+
 
 `.github/workflows/update-data.yml` 已配置为每天北京时间 09:00 自动抓取。
 抓取脚本 `scripts/scrape.py` 是 best-effort 实现，使用 Python 标准库，无需额外安装。
