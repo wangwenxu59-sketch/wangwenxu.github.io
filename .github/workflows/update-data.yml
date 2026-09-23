@@ -1,0 +1,38 @@
+name: Scrape bid data
+
+# 每 3 小时抓取一次全站最新招标/中标公告；也可手动触发
+on:
+  schedule:
+    - cron: "0 */3 * * *"   # UTC 0,3,6,9,12,15,18,21 点 ≈ 北京时间 8,11,14,17,20,23,2,5 点
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: "抓取页数（每页约20条）"
+        default: "8"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run scraper
+        continue-on-error: true
+        run: |
+          PAGES="${{ github.event.inputs.pages || '8' }}"
+          python3 scripts/scrape.py --pages "$PAGES"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/bids.json data/winners.json
+          if git diff --cached --quiet; then
+            echo "无新数据"
+          else
+            git commit -m "chore: auto-update bid data ($(date -u +%Y-%m-%dT%H:%MZ))"
+            git pull --rebase origin main || true
+            git push
+          fi

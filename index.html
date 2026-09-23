@@ -114,7 +114,7 @@
 <header class="app-header">
   <div class="container">
     <h1>📋 招投标信息聚合</h1>
-    <p>全国招标公告 · 中标公示 · 政策法规 · 一站检索</p>
+    <p>数据源：中国政府采购网 · 每 3 小时自动更新 · 全国省级公告一站检索</p>
     <div class="app-meta" id="metaBar">数据加载中…</div>
   </div>
 </header>
@@ -196,6 +196,8 @@ const STATE = {
   data: { bids: [], winners: [], policies: [] },
   filters: { q: '', region: '', category: '', industry: '', date: '' },
   sort: 'date-desc',
+  pageSize: 30,
+  shown: 30,
 };
 
 /* ==================== 数据加载 ==================== */
@@ -225,7 +227,7 @@ function updateMeta() {
     <span>·</span>
     <span>📅 最近更新：${latest || '—'}</span>
     <span>·</span>
-    <span>🔄 自动更新已配置</span>
+    <span>🔄 每 3 小时自动抓取</span>
   `;
 }
 
@@ -250,10 +252,17 @@ function fillSelect(id, options, allLabel) {
 
 /* ==================== 渲染 ==================== */
 function getCurrentData() {
+  if (STATE.currentTab === 'about') return [];
   return STATE.data[STATE.currentTab] || [];
 }
 
 function render() {
+  if (STATE.currentTab === 'about') {
+    document.getElementById('statsText').textContent = '';
+    document.getElementById('resultList').innerHTML = aboutHtml();
+    document.getElementById('empty').style.display = 'none';
+    return;
+  }
   let items = [...getCurrentData()];
   const f = STATE.filters;
 
@@ -299,10 +308,44 @@ function render() {
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = items.map(cardHtml).join('');
+  const visible = items.slice(0, STATE.shown);
+  list.innerHTML = visible.map(cardHtml).join('');
   list.querySelectorAll('.card').forEach(el => {
     el.addEventListener('click', () => openDetail(el.dataset.id));
   });
+
+  // 加载更多按钮
+  let moreBtn = document.getElementById('loadMore');
+  if (moreBtn) moreBtn.remove();
+  if (STATE.shown < items.length) {
+    moreBtn = document.createElement('button');
+    moreBtn.id = 'loadMore';
+    moreBtn.style.cssText = 'grid-column:1/-1;justify-self:center;padding:12px 32px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--primary);cursor:pointer;box-shadow:var(--shadow)';
+    moreBtn.textContent = `加载更多（还有 ${items.length - STATE.shown} 条）`;
+    moreBtn.onmouseover = () => moreBtn.style.borderColor = 'var(--primary)';
+    moreBtn.onmouseout = () => moreBtn.style.borderColor = 'var(--border)';
+    moreBtn.onclick = () => { STATE.shown += STATE.pageSize; render(); };
+    list.appendChild(moreBtn);
+  }
+}
+
+function aboutHtml() {
+  const total = STATE.data.bids.length + STATE.data.winners.length;
+  return `
+    <div class="about" style="grid-column:1/-1">
+      <h3>📌 数据来源</h3>
+      <p>本站公告数据来自<b>中国政府采购网</b>（ccgp.gov.cn）公开搜索接口，覆盖全国各省级政府采购公告，包括招标公告、中标/成交公示、更正公告等。</p>
+      <h3>🔄 更新频率</h3>
+      <p>每 3 小时自动抓取一次最新公告（GitHub Actions 定时任务），当前已收录 <b>${total}</b> 条招标/中标信息。</p>
+      <h3>🔎 功能说明</h3>
+      <ul>
+        <li><b>搜索</b>：支持标题、采购人、代理机构、摘要关键词</li>
+        <li><b>筛选</b>：按地区（省份）、类型（工程/货物/服务）、行业标签、发布时间</li>
+        <li><b>详情</b>：点击卡片查看完整信息，可跳转原文、打印、复制分享链接</li>
+      </ul>
+      <h3>⚠️ 免责声明</h3>
+      <p>数据来源于公开网络，仅供学习参考。<b>最终结果以官方发布为准</b>，本站不承担任何因数据误差产生的责任。</p>
+    </div>`;
 }
 
 function cardHtml(item) {
@@ -440,6 +483,7 @@ document.querySelectorAll('nav.tabs button').forEach(btn => {
     document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     STATE.currentTab = btn.dataset.tab;
+    STATE.shown = STATE.pageSize;
     document.getElementById('industryFilter').parentElement.style.display =
       STATE.currentTab === 'policies' ? 'none' : '';
     document.getElementById('dateFilter').parentElement.style.display =
@@ -452,17 +496,20 @@ document.querySelectorAll('nav.tabs button').forEach(btn => {
   document.getElementById(id).addEventListener('input', e => {
     const map = { searchInput: 'q', regionFilter: 'region', categoryFilter: 'category', dateFilter: 'date', industryFilter: 'industry' };
     STATE.filters[map[id]] = e.target.value.trim();
+    STATE.shown = STATE.pageSize;
     render();
   });
 });
 
 document.getElementById('sortSelect').addEventListener('change', e => {
   STATE.sort = e.target.value;
+  STATE.shown = STATE.pageSize;
   render();
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   STATE.filters = { q: '', region: '', category: '', industry: '', date: '' };
+  STATE.shown = STATE.pageSize;
   document.getElementById('searchInput').value = '';
   document.getElementById('regionFilter').value = '';
   document.getElementById('categoryFilter').value = '';
