@@ -1,14 +1,14 @@
 name: Scrape bid data
 
-# 每 3 小时抓取一次全站最新招标/中标公告；也可手动触发
+# 每 3 小时抓取一次材料行业（模具钢/模具/挤压/锻造/冲压/铝型材/钢材/材料）招标/中标公告
 on:
   schedule:
     - cron: "0 */3 * * *"   # UTC 0,3,6,9,12,15,18,21 点 ≈ 北京时间 8,11,14,17,20,23,2,5 点
   workflow_dispatch:
     inputs:
       pages:
-        description: "抓取页数（每页约20条）"
-        default: "8"
+        description: "每个关键词抓取页数（每页约20条）"
+        default: "3"
 
 jobs:
   scrape:

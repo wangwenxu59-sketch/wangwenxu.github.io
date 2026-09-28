@@ -49,7 +49,9 @@ bid-info-site/
 ### 方式 A：自动抓取（已启用 ✅）
 
 `.github/workflows/update-data.yml` 已配置为**每 3 小时**自动运行：
-- 抓取中国政府采购网最新公告（默认 8 页 ≈ 160 条/次）
+- 定向抓取**材料行业**公告，关键词组：`模具钢、模具、挤压、锻造、冲压、铝型材、钢材、材料`
+- 检索时间窗口为最近 90 天（`scripts/scrape.py` 中 `--days` 可调）
+- 采购人覆盖全国各省市的政府单位、事业单位、国有企业及各类企业
 - 自动分类：招标类 → `bids.json`，中标/成交类 → `winners.json`
 - 按 URL 去重合并，每文件最多保留 800 条（滚动更新）
 - 自动提交并触发 Pages 重新部署
@@ -58,10 +60,10 @@ bid-info-site/
 
 抓取脚本使用 Python 标准库（urllib + re），无需安装依赖。目标站改版时调整 `scripts/scrape.py` 中的正则即可。
 
-### 方式 B：关键词定向抓取
+### 方式 B：自定义关键词抓取
 
 ```bash
-python3 scripts/scrape.py --kw 信息化,医疗,教育 --pages 5
+python3 scripts/scrape.py --kw 模具钢,挤压 --pages 5 --days 30
 ```
 
 ### 方式 C：手动编辑
@@ -83,7 +85,7 @@ python3 scripts/scrape.py --kw 信息化,医疗,教育 --pages 5
   "url": "http://www.ccgp.gov.cn/cggg/...",   // 原文链接
   "source": "中国政府采购网",
   "summary": "项目简介…",
-  "tags": ["信息化", "医疗"]
+  "tags": ["模具钢", "模具"]
 }
 ```
 

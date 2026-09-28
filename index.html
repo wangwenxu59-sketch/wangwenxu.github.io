@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>招投标信息聚合站</title>
-<meta name="description" content="聚合全国招标公告、中标公示与招投标政策法规">
+<title>材料模具行业招投标信息站</title>
+<meta name="description" content="聚合全国材料行业招标公告：模具钢、模具、挤压、锻造、冲压、铝型材、钢材等">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
 <style>
   :root{
@@ -113,8 +113,8 @@
 
 <header class="app-header">
   <div class="container">
-    <h1>📋 招投标信息聚合</h1>
-    <p>数据源：中国政府采购网 · 每 3 小时自动更新 · 全国省级公告一站检索</p>
+    <h1>📋 材料模具行业招投标</h1>
+    <p>模具钢 · 模具 · 挤压 · 锻造 · 冲压 · 铝型材 · 钢材 · 全国政企单位公告 · 每 3 小时更新</p>
     <div class="app-meta" id="metaBar">数据加载中…</div>
   </div>
 </header>
@@ -333,10 +333,10 @@ function aboutHtml() {
   const total = STATE.data.bids.length + STATE.data.winners.length;
   return `
     <div class="about" style="grid-column:1/-1">
-      <h3>📌 数据来源</h3>
-      <p>本站公告数据来自<b>中国政府采购网</b>（ccgp.gov.cn）公开搜索接口，覆盖全国各省级政府采购公告，包括招标公告、中标/成交公示、更正公告等。</p>
+      <h3>📌 数据来源与检索范围</h3>
+      <p>本站聚焦<b>材料行业</b>招投标信息，定向检索关键词：<b>模具钢、模具、挤压、锻造、冲压、铝型材、钢材、材料</b>。数据来自<b>中国政府采购网</b>（ccgp.gov.cn）公开搜索接口，覆盖全国各省市公告，采购人包括各级政府单位、事业单位、国有企业及各类企业，检索时间窗口为最近 90 天。</p>
       <h3>🔄 更新频率</h3>
-      <p>每 3 小时自动抓取一次最新公告（GitHub Actions 定时任务），当前已收录 <b>${total}</b> 条招标/中标信息。</p>
+      <p>每 3 小时自动抓取一次最新公告（GitHub Actions 定时任务），当前已收录 <b>${total}</b> 条材料行业招标/中标信息。</p>
       <h3>🔎 功能说明</h3>
       <ul>
         <li><b>搜索</b>：支持标题、采购人、代理机构、摘要关键词</li>

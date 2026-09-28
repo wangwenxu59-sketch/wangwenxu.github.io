@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-全网招投标信息抓取器 —— 数据源：中国政府采购网搜索接口（覆盖全国各省公告）
+材料行业招投标信息抓取器 —— 数据源：中国政府采购网搜索接口（覆盖全国各省公告）
 
 工作原理：
-  search.ccgp.gov.cn/bxsearch?searchtype=1&kw=<关键词>&page_index=<页码>
-  - kw 为空时返回全站最新公告（所有省份、所有类型）
+  search.ccgp.gov.cn/bxsearch?searchtype=1&kw=<关键词>&start_time=…&end_time=…&timeType=6
+  - 默认按材料行业关键词组抓取：模具钢 / 模具 / 挤压 / 锻造 / 冲压 / 铝型材 / 钢材 / 材料
+  - 时间窗口默认最近 90 天（--days 可调）
   - 每页约 20 条，含标题/摘要/时间/采购人/代理机构/公告类型/省份/原文链接
+  - 采购人覆盖各级政府单位、事业单位、国有及民营企业，全国各省市
 
 分类规则：
   招标类（公开招标/磋商/谈判/询价/邀请/单一来源）→ data/bids.json
@@ -14,12 +16,14 @@
   其他（更正/废标/流标/终止）                      → data/bids.json（type 标注）
 
 用法：
-  python3 scripts/scrape.py                # 抓最新 5 页（约100条）
-  python3 scripts/scrape.py --pages 10     # 抓 10 页
-  python3 scripts/scrape.py --kw 信息化,医疗  # 额外按关键词抓取
-  python3 scripts/scrape.py --dry-run      # 只打印不写文件
+  python3 scripts/scrape.py                    # 默认材料关键词组，各抓 3 页
+  python3 scripts/scrape.py --pages 5          # 每个关键词抓 5 页
+  python3 scripts/scrape.py --days 30          # 只查最近 30 天
+  python3 scripts/scrape.py --kw 模具钢,挤压    # 覆盖默认关键词组
+  python3 scripts/scrape.py --dry-run          # 只打印不写文件
 """
 import argparse
+import datetime
 import json
 import os
 import re
@@ -35,7 +39,12 @@ DATA_DIR = os.path.join(ROOT, "data")
 BIDS_FILE = os.path.join(DATA_DIR, "bids.json")
 WINNERS_FILE = os.path.join(DATA_DIR, "winners.json")
 
-SEARCH_URL = "https://search.ccgp.gov.cn/bxsearch?searchtype=1&page_index={page}&bidSort=0&pinMu=0&bidType=0&dbselect=bidx&kw={kw}"
+# 材料行业关键词组（模具钢 / 挤压 / 模具 / 锻造 / 冲压 / 铝型材 / 钢材 / 材料类总览）
+MATERIAL_KWS = ["模具钢", "模具", "挤压", "锻造", "冲压", "铝型材", "钢材", "材料"]
+
+SEARCH_URL = ("https://search.ccgp.gov.cn/bxsearch?searchtype=1&page_index={page}"
+              "&bidSort=0&pinMu=0&bidType=0&dbselect=bidx&kw={kw}"
+              "&start_time={start}&end_time={end}&timeType=6")
 MAX_RECORDS = 800          # 每个文件最多保留条数（控制仓库体积）
 PAGE_DELAY = 2.5           # 每页抓取间隔（秒），礼貌抓取
 TIMEOUT = 20
@@ -228,7 +237,6 @@ def save(path, data):
 def merge(existing, new_records):
     """按 URL 去重合并，保留最新。"""
     by_url = {x["url"]: x for x in existing if x.get("url")}
-    seq = len(existing) + 1
     added = 0
     for rec in new_records:
         u = rec.get("url")
@@ -259,31 +267,41 @@ def to_site_record(rec, seq):
         "url": rec.get("url", ""),
         "source": "中国政府采购网",
         "summary": rec.get("summary", ""),
-        "tags": guess_tags(rec["title"]),
+        "tags": guess_tags(rec["title"] + " " + rec.get("summary", "")),
     }
     return out, target
 
 
-def guess_tags(title):
+def guess_tags(text):
+    """材料行业标签。"""
     tags = []
     rules = [
-        ("信息化", ["信息化", "数字化", "智慧", "系统"]), ("医疗", ["医院", "医疗", "卫生", "妇幼"]),
-        ("教育", ["学校", "教育", "大学", "中学", "小学"]), ("市政", ["市政", "道路", "管网", "路灯"]),
-        ("安防", ["公安", "消防", "警务", "监控", "应急"]), ("乡村振兴", ["乡村", "农村", "农业", "扶贫"]),
-        ("环保", ["环保", "生态", "污水", "垃圾", "监测"]), ("交通", ["交通", "公路", "铁路", "机场", "轨道"]),
+        ("模具钢", ["模具钢", "模钢", "H13", "Cr12", "SKD", "合金钢"]),
+        ("模具", ["模具", "模架", "模胚", "注塑模", "冲压模", "压铸模"]),
+        ("挤压", ["挤压", " extrusion", "压铸", "铝型材"]),
+        ("锻造", ["锻造", "锻件", "冲压", "机加工", "热处理"]),
+        ("材料", ["材料", "钢材", "原材料", "板材", "管材", "型材"]),
     ]
     for tag, kws in rules:
-        if any(k in title for k in kws):
+        if any(k in text for k in kws):
             tags.append(tag)
     return tags[:3]
 
 
 # ---------- 主流程 ----------
-def scrape_keyword(kw, pages):
-    """抓取一个关键词（可为空）的多页结果。"""
+def date_window(days):
+    """返回 ccgp 用的日期参数（格式 2026:09:28）。"""
+    today = datetime.date.today()
+    start = today - datetime.timedelta(days=days)
+    return start.strftime("%Y:%m:%d"), today.strftime("%Y:%m:%d")
+
+
+def scrape_keyword(kw, pages, start, end):
+    """抓取一个关键词的多页结果。"""
     all_recs = []
     for page in range(1, pages + 1):
-        url = SEARCH_URL.format(page=page, kw=urllib.parse.quote(kw))
+        url = SEARCH_URL.format(page=page, kw=urllib.parse.quote(kw),
+                                start=urllib.parse.quote(start), end=urllib.parse.quote(end))
         try:
             html = fetch(url)
         except Exception as e:
@@ -296,6 +314,8 @@ def scrape_keyword(kw, pages):
         recs = parse_page(html)
         print(f"  [第{page}页] 解析 {len(recs)} 条", file=sys.stderr)
         all_recs.extend(recs)
+        if len(recs) == 0:
+            break   # 关键词结果不足一页，后面没有了
         if page < pages:
             time.sleep(PAGE_DELAY)
     return all_recs
@@ -303,24 +323,28 @@ def scrape_keyword(kw, pages):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pages", type=int, default=5, help="每个关键词抓取页数")
-    ap.add_argument("--kw", default="", help="额外关键词，逗号分隔（空关键词=全站最新）")
+    ap.add_argument("--pages", type=int, default=3, help="每个关键词抓取页数")
+    ap.add_argument("--days", type=int, default=90, help="检索时间窗口（天）")
+    ap.add_argument("--kw", default="", help="覆盖默认关键词组，逗号分隔")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    keywords = [""]  # 空关键词 = 全站最新公告
     if args.kw:
-        keywords += [k.strip() for k in args.kw.split(",") if k.strip()]
+        keywords = [k.strip() for k in args.kw.split(",") if k.strip()]
+    else:
+        keywords = MATERIAL_KWS
+
+    start, end = date_window(args.days)
 
     bids = load(BIDS_FILE)
     winners = load(WINNERS_FILE)
     print(f"现有数据：bids={len(bids)}, winners={len(winners)}", file=sys.stderr)
+    print(f"关键词组：{keywords}  时间窗口：{start} ~ {end}", file=sys.stderr)
 
     raw_new = []
     for kw in keywords:
-        label = kw or "（全站最新）"
-        print(f"\n>>> 抓取关键词：{label}（{args.pages} 页）", file=sys.stderr)
-        raw_new.extend(scrape_keyword(kw, args.pages))
+        print(f"\n>>> 抓取关键词：{kw}（{args.pages} 页）", file=sys.stderr)
+        raw_new.extend(scrape_keyword(kw, args.pages, start, end))
 
     # 去重（URL）
     seen = set()
