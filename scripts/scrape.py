@@ -253,6 +253,13 @@ def merge(existing, new_records):
 def to_site_record(rec, seq):
     """转成站点 schema。"""
     target, display_type, cat = classify(rec)
+    url = rec.get("url", "")
+    if "cebpubservice" in url:
+        source_name = "中国招标投标公共服务平台"
+    elif "ccgp" in url:
+        source_name = "中国政府采购网"
+    else:
+        source_name = "公开渠道"
     out = {
         "id": make_id(rec, seq),
         "title": rec["title"],
@@ -264,8 +271,8 @@ def to_site_record(rec, seq):
         "budgetText": "",
         "publishDate": rec.get("publishDate", ""),
         "deadline": "",
-        "url": rec.get("url", ""),
-        "source": "中国政府采购网",
+        "url": url,
+        "source": source_name,
         "summary": rec.get("summary", ""),
         "tags": guess_tags(rec["title"] + " " + rec.get("summary", "")),
     }
@@ -294,6 +301,121 @@ def date_window(days):
     today = datetime.date.today()
     start = today - datetime.timedelta(days=days)
     return start.strftime("%Y:%m:%d"), today.strftime("%Y:%m:%d")
+
+
+# ---------- 数据源 2：中国招标投标公共服务平台（企业招标，免登录） ----------
+CEB_BASE = "https://bulletin.cebpubservice.com/xxfbcmses/search/{page_name}.html"
+# categoryId: 88=招标公告 89=更正 90=中标结果 91=中标候选人 92=资格预审
+CEB_CATEGORIES = {"88": ("bulletin", "bids"), "90": ("result", "winners")}
+CEB_KWS = ["模具钢", "模具", "挤压", "锻造", "冲压", "铝型材"]   # 精准关键词（"材料"太泛不加）
+
+CEB_HEADERS = {
+    "User-Agent": HEADERS["User-Agent"],
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Referer": "https://bulletin.cebpubservice.com/",
+}
+
+CEB_INDUSTRIES = ["机械设备", "矿产冶金", "房屋建筑", "能源电力", "市政房地产", "水利水电",
+                  "交通运输", "生物医药", "石油化工", "其他", "电子通信", "林业牧渔"]
+
+
+def parse_ceb_page(html, kw, category_id):
+    """解析 cebpubservice 搜索结果表格。
+
+    行结构（容错解析）：标题<a title> | 行业 | 【地区】 | 来源平台 | 日期
+    """
+    records = []
+    # 被阿里盾挑战时页面为混淆 JS，无表格
+    if "captcha" in html or "urlOpen" not in html:
+        return None   # None = 被拦截（区别于空结果）
+
+    trs = re.findall(r"<tr[^>]*>(.*?)</tr>", html, re.S)
+    for tr in trs:
+        a_m = re.search(r"javascript:urlOpen\('([0-9a-f]{16,40})'\)[^>]*title=\"([^\"]+)\"", tr)
+        if not a_m:
+            a_m = re.search(r"<a[^>]*urlOpen\('([0-9a-f]{16,40})'\)[^>]*>(.*?)</a>", tr, re.S)
+            if a_m:
+                title = re.sub(r"\s+", " ", strip_tags(a_m.group(2)))
+            else:
+                continue
+        else:
+            title = a_m.group(2).strip()
+        if not title or len(title) < 6:
+            continue
+        open_id = a_m.group(1)
+
+        text = strip_tags(tr)
+        # 地区：【江苏】
+        r_m = re.search(r"【(.+?)】", text)
+        region = r_m.group(1) if r_m else ""
+        # 日期
+        d_m = re.search(r"(\d{4})-(\d{2})-(\d{2})", text)
+        publish_date = d_m.group(0) if d_m else ""
+        # 行业
+        industry = ""
+        for ind in CEB_INDUSTRIES:
+            if ind in text:
+                industry = ind
+                break
+        # 来源平台（td 中含"平台/网/公司/工具"且非标题非行业）
+        source_platform = ""
+        for td in re.findall(r"<td[^>]*>(.*?)</td>", tr, re.S):
+            t = strip_tags(td)
+            if t and t != title and any(k in t for k in ["平台", "网站", "采购网", "发布工具", "交易"]) and t != industry and "【" not in t:
+                source_platform = t
+                break
+
+        # 链接：详情页需 JS 打开，这里用搜索页+锚点保证唯一性（可点击到官方平台对应列表）
+        url = (f"https://bulletin.cebpubservice.com/xxfbcmses/search/"
+               f"{CEB_CATEGORIES[category_id][0]}.html?searchDate=&dates=90"
+               f"&categoryId={category_id}&word={urllib.parse.quote(kw)}#ceb-{open_id}")
+
+        records.append({
+            "title": title,
+            "summary": f"来源平台：{source_platform or '中国招标投标公共服务平台'} | 行业：{industry or '其他'}",
+            "publishDate": publish_date,
+            "publishTime": "",
+            "buyer": "",
+            "agency": "",
+            "noticeType": "招标公告" if category_id == "88" else "中标结果",
+            "region": region,
+            "itemClass": "",
+            "url": url,
+        })
+    return records
+
+
+def scrape_ceb(days):
+    """抓取中国招标投标公共服务平台（企业招标，覆盖国企/民企/交易平台）。"""
+    all_recs = []
+    start = (datetime.date.today() - datetime.timedelta(days=days)).strftime("%Y-%m-%d")
+    for category_id, (_page, _target) in CEB_CATEGORIES.items():
+        for kw in CEB_KWS:
+            url = (f"https://bulletin.cebpubservice.com/xxfbcmses/search/"
+                   f"{CEB_CATEGORIES[category_id][0]}.html?searchDate={start}&dates={days}"
+                   f"&categoryId={category_id}&industryName=&area=&status=&publishMedia="
+                   f"&sourceInfo=&showStatus=&word={urllib.parse.quote(urllib.parse.quote(kw))}")
+            try:
+                html = fetch_with(CEB_HEADERS, url)
+            except Exception as e:
+                print(f"  [CEB {kw}] 抓取失败：{e}", file=sys.stderr)
+                continue
+            recs = parse_ceb_page(html, kw, category_id)
+            if recs is None:
+                print(f"  [CEB {kw}] 被反爬拦截（挑战页），本环境跳过", file=sys.stderr)
+                return []      # 整个源被拦，直接放弃，不影响其他源
+            print(f"  [CEB {kw}/{'招标' if category_id == '88' else '中标'}] 解析 {len(recs)} 条", file=sys.stderr)
+            all_recs.extend(recs)
+            time.sleep(PAGE_DELAY)
+    return all_recs
+
+
+def fetch_with(headers, url):
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+        charset = resp.headers.get_content_charset() or "utf-8"
+        return resp.read().decode(charset, errors="ignore")
 
 
 def scrape_keyword(kw, pages, start, end):
@@ -345,6 +467,13 @@ def main():
     for kw in keywords:
         print(f"\n>>> 抓取关键词：{kw}（{args.pages} 页）", file=sys.stderr)
         raw_new.extend(scrape_keyword(kw, args.pages, start, end))
+
+    # 数据源 2：中国招标投标公共服务平台（企业招标：国企/民企/各交易平台）
+    print("\n>>> 抓取中国招标投标公共服务平台（企业招标）", file=sys.stderr)
+    ceb_recs = scrape_ceb(args.days)
+    raw_new.extend(ceb_recs)
+    if not ceb_recs:
+        print("  CEB 源未取到数据（本环境被拦截或无结果）", file=sys.stderr)
 
     # 去重（URL）
     seen = set()
