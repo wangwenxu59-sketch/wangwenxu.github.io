@@ -738,6 +738,22 @@
     ]
   },
   {
+    "id": "CEB-20261022-0151",
+    "title": "中核（天津）科技发展有限公司异型铝材加工服务",
+    "type": "招标公告",
+    "category": "服务",
+    "region": "上海",
+    "buyer": "",
+    "agency": "",
+    "budgetText": "",
+    "publishDate": "2026-10-22",
+    "deadline": "",
+    "url": "https://bulletin.cebpubservice.com/xxfbcmses/search/bulletin.html?searchDate=&dates=90&categoryId=88&word=铝型材#ceb-b1637ac2b8ce",
+    "source": "中国招标投标公共服务平台",
+    "summary": "来源平台：中核集团电子采购平台 | 行业：其他",
+    "tags": []
+  },
+  {
     "id": "CG-20261021-0069",
     "title": "宝鸡文理学院光电信息材料与器件专业实验室建设项目(二次)采购更正公告（第二次）",
     "type": "更正公告",
@@ -12225,6 +12241,24 @@
     ]
   },
   {
+    "id": "CEB-20260831-0055",
+    "title": "西北有色金属宝鸡创新研究院摩擦挤压扭转加工设备采购项目招标公告",
+    "type": "招标公告",
+    "category": "货物",
+    "region": "陕西",
+    "buyer": "",
+    "agency": "",
+    "budgetText": "",
+    "publishDate": "2026-08-31",
+    "deadline": "",
+    "url": "https://bulletin.cebpubservice.com/xxfbcmses/search/bulletin.html?searchDate=&dates=90&categoryId=88&word=挤压#ceb-cfda266562ea",
+    "source": "中国招标投标公共服务平台",
+    "summary": "来源平台：陕西采购与招标网 | 行业：机械设备",
+    "tags": [
+      "挤压"
+    ]
+  },
+  {
     "id": "CEB-20260830-0088",
     "title": "摩锐工业（山西）有限公司高质量锻件智能化制造项目监理招标公告",
     "type": "招标公告",
@@ -13852,40 +13886,6 @@
     "tags": [
       "挤压",
       "材料"
-    ]
-  },
-  {
-    "id": "CEB-20261022-0151",
-    "title": "中核（天津）科技发展有限公司异型铝材加工服务",
-    "type": "招标公告",
-    "category": "服务",
-    "region": "上海",
-    "buyer": "",
-    "agency": "",
-    "budgetText": "",
-    "publishDate": "2026-10-22",
-    "deadline": "",
-    "url": "https://bulletin.cebpubservice.com/xxfbcmses/search/bulletin.html?searchDate=&dates=90&categoryId=88&word=铝型材#ceb-b1637ac2b8ce",
-    "source": "中国招标投标公共服务平台",
-    "summary": "来源平台：中核集团电子采购平台 | 行业：其他",
-    "tags": []
-  },
-  {
-    "id": "CEB-20260831-0055",
-    "title": "西北有色金属宝鸡创新研究院摩擦挤压扭转加工设备采购项目招标公告",
-    "type": "招标公告",
-    "category": "货物",
-    "region": "陕西",
-    "buyer": "",
-    "agency": "",
-    "budgetText": "",
-    "publishDate": "2026-08-31",
-    "deadline": "",
-    "url": "https://bulletin.cebpubservice.com/xxfbcmses/search/bulletin.html?searchDate=&dates=90&categoryId=88&word=挤压#ceb-cfda266562ea",
-    "source": "中国招标投标公共服务平台",
-    "summary": "来源平台：陕西采购与招标网 | 行业：机械设备",
-    "tags": [
-      "挤压"
     ]
   }
 ]
